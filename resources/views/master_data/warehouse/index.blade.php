@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('title', 'Daftar Item')
+@section('title', 'Daftar Gudang')
 @section('content')
     <!-- Content Header (Page header) -->
     <div class="content-header">
@@ -26,13 +26,13 @@
                     <span class="btn-label">
                         <i class="fa fa-plus"></i>
                     </span>
-                    Tambah Item
+                    Tambah Gudang
                 </button>
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-import-warehouse">
                     <span class="btn-label">
                         <i class="fa fa-plus"></i>
                     </span>
-                    Import Item
+                    Import Gudang
                 </button>
             </div>
             <!-- /.card-header -->
@@ -43,15 +43,10 @@
                             <th class="not-exported" width=5%>
                                 <input class="checkmark select-form" type="checkbox" name="select_all" id="select_all">
                             </th>
-                            <th>Kode Item</th>
-                            <th>Nama Item</th>
-                            <th>Stok</th>
-                            <th>Satuan</th>
-                            <th>Jenis</th>
-                            <th>Merek</th>
-                            <th>Rak</th>
-                            <th>Harga Pokok</th>
-                            <th>Harga Jual</th>
+                            <th>Gudang</th>
+                            <th>Telepon</th>
+                            <th>Email</th>
+                            <th>Alamat</th>
                             <th class="not-exported" width="13%">Aksi</th>
                         </tr>
                     </thead>
@@ -64,6 +59,146 @@
     </div>
     <!-- /.container-fluid -->
     <!-- /.content -->
+
+    {{-- modals tambah gudang --}}
+    <div class="modal fade" id="modal-add-warehouse" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Tambah Gudang</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="card-body text-alert">
+                    Label bidang yang ditandai dengan * adalah bidang input wajib.
+                </div>
+                <form method="POST" action="{{ route('warehouselist.store') }}" class="needs-validation add-warehouse">
+                    <div class="modal-body">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="name">Nama Gudang *</strong></label>
+                                        <input type="text" class="form-control" id="name" name="name">
+                                        <small id="errorName" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="phone">Telepon *</strong></label>
+                                        <input type="number" class="form-control" id="phone" name="phone">
+                                        <small id="errorPhone" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email">
+                                        <small id="errorEame" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="desc">Keterangan</label>
+                                        <input type="text" class="form-control" id="desc" name="desc">
+                                        <small id="errorDesc" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="address">Alamat</label>
+                                        <textarea class="form-control" rows="3" id="address" name="address"></textarea>
+                                        <small id="errorAddress" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-info" id="addWarehouse">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- /.modal -->
+
+    {{-- modals edit gudang --}}
+    <div class="modal fade" id="modal-update-type" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Gudang : <span id="warehouseTitle"></span></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="card-body text-alert">
+                    Label bidang yang ditandai dengan * adalah bidang input wajib.
+                </div>
+                <form method="POST" class="needs-validation update-type">
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="hidden" id="edtId">
+                    <div class="modal-body">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="name">Gudang *</strong></label>
+                                        <input type="text" class="form-control" id="edtName" name="name">
+                                        <small id="errorEdtName" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="phone">Telepon *</strong></label>
+                                        <input type="number" class="form-control" id="edtPhone" name="phone">
+                                        <small id="errorEdtPhone" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" class="form-control" id="edtEmail" name="email">
+                                        <small id="errorEdtEmail" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="desc">Keterangan</label>
+                                        <input type="text" class="form-control" id="edtDesc" name="desc">
+                                        <small id="errorEdtDesc" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="address">Alamat</label>
+                                        <textarea class="form-control" rows="3" id="edtAddress" name="address"></textarea>
+                                        <small id="errorEdtAddress" class="form-text text-muted"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-info" id="updateWarehouse">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- /.modal -->
 
     {{-- modals import warehouse --}}
     <div class="modal fade" id="modal-import-warehouse" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -79,8 +214,8 @@
                 <div class="card-body text-alert">
                     Label bidang yang ditandai dengan * adalah bidang input wajib.
                 </div>
-                <form method="POST" action="{{ route('warehouselist.import') }}" class="needs-validation import-warehouse"
-                    enctype="multipart/form-data">
+                <form method="POST" action="{{ route('warehouselist.import') }}"
+                    class="needs-validation import-warehouse" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="callout callout-info">
@@ -93,7 +228,8 @@
                                         <label for="filewarehouse">Unggah file CSV *</label>
                                         <div class="input-group">
                                             <div class="custom-file">
-                                                <input type="file" name="file" class="custom-file-input" id="filewarehouse">
+                                                <input type="file" name="file" class="custom-file-input"
+                                                    id="filewarehouse">
                                                 <label class="custom-file-label" for="filewarehouse">Choose file</label>
                                             </div>
                                         </div>
@@ -168,9 +304,6 @@
                         data: 'address'
                     },
                     {
-                        data: 'desc'
-                    },
-                    {
                         data: 'action',
                         searchable: false,
                         sortable: false
@@ -183,7 +316,7 @@
                 buttons: [{
                         text: '<i title="Hapus" class="fas fa-times"></i>',
                         action: function(e, dt, node, config) {
-                            let selected = $("#table-warehouse tbody .select-form:checked")
+                            let selected = $("#table-type tbody .select-form:checked")
                             let id = []
                             // looping row selected
                             $.each(selected, function(index, responce) {
@@ -223,9 +356,8 @@
                                                             .message
                                                     });
                                                 }
-                                                $('#modal-import-warehouse')
-                                                    .modal(
-                                                        'hide');
+                                                $('#modal-import-type').modal(
+                                                    'hide');
                                                 table.ajax.reload();
                                             }
                                         })
@@ -287,7 +419,7 @@
                 ]
             });
             table.buttons().container()
-                .appendTo('#table-warehouse_wrapper .col-md-5:eq(0)');
+                .appendTo('#table-type_wrapper .col-md-5:eq(0)');
         })
 
         // function select all
@@ -298,20 +430,178 @@
         // end function
 
         // function select one
-        $("#table-warehouse tbody").on('click', '.select-form', function() {
+        $("#table-type tbody").on('click', '.select-form', function() {
             if ($(this).prop('checked') != true) {
                 $("#select_all").prop('checked', false)
             }
-            let selectAll = $("#table-warehouse tbody .select-form:checked")
+            let selectAll = $("#table-type tbody .select-form:checked")
             let deleteSelected = (selectAll.length > 0)
         })
         // end function
 
-        // import warehouse
-        $(document).on("click", "#importWarehouse", function(e) {
+        // add type
+        $(document).on("click", "#addWarehouse", function(e) {
+            e.preventDefault();
+
+            var name = $("#name").val();
+            var phone = $("#phone").val();
+            var email = $("#email").val();
+            var desc = $("#desc").val();
+            var address = $("#address").val();
+
+            var fd = new FormData();
+            fd.append("name", name);
+            fd.append("phone", phone);
+            fd.append("email", email);
+            fd.append("desc", desc);
+            fd.append("address", address);
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $.ajax({
+                url: $('.add-warehouse').attr('action'),
+                type: $('.add-warehouse').attr('method'),
+                dataType: "JSON",
+                processData: false,
+                contentType: false,
+                data: fd,
+                success: function(responce) {
+                    console.log(responce);
+                    if (responce.success == 200) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Yeay..!',
+                            text: responce.message
+                        });
+                        $('#modal-add-warehouse').modal('hide')
+                        $('.add-warehouse')[0].reset()
+                        table.ajax.reload();
+                    } else {
+                        if (responce.message.name) {
+                            $('#name').addClass('is-invalid');
+                            $('#errorName').html(responce.message.name);
+                        } else {
+                            $('#name').removeClass('is-invalid');
+                            $('#name').addClass('');
+                            $('#errorName').html('');
+                        }
+                        if (responce.message.phone) {
+                            $('#phone').addClass('is-invalid');
+                            $('#errorPhone').html(responce.message.phone);
+                        } else {
+                            $('#phone').removeClass('is-invalid');
+                            $('#phone').addClass('');
+                            $('#errorPhone').html('');
+                        }
+                    }
+                }
+            })
+        })
+
+        // show data type
+        $(document).on("click", "#show", function(e) {
+            e.preventDefault();
+
+            var id = $(this).attr("value");
+            var url = "{{ route('warehouselist.show', ':id') }}";
+            url = url.replace(':id', id);
+
+            $.ajax({
+                url: url,
+                type: "GET",
+                dataType: "JSON",
+                data: {
+                    id: id
+                },
+                success: function(responce) {
+                    $('#modal-update-type').modal('show');
+                    $('#warehouseTitle').text(responce.data.type);
+                    $('#edtId').val(responce.data.id);
+                    $('#edtName').val(responce.data.name);
+                    $('#edtEmail').val(responce.data.email);
+                    $('#edtPhone').val(responce.data.phone);
+                    $('#edtDesc').val(responce.data.desc);
+                    $('#edtAddress').val(responce.data.address);
+                }
+            })
+        })
+
+        // add type
+        $(document).on("click", "#updateWarehouse", function(e) {
+            e.preventDefault();
+
+            var method = $("input[name='_method']").attr('value');
+            var id = $("#edtId").val();
+            var name = $("#edtName").val();
+            var phone = $("#edtPhone").val();
+            var email = $("#edtEmail").val();
+            var desc = $("#edtDesc").val();
+            var address = $("#edtAddress").val();
+            var url = "{{ route('warehouselist.update', ':id') }}";
+            url = url.replace(':id', id);
+
+            var fd = new FormData();
+            fd.append("_method", method)
+            fd.append("id", id);
+            fd.append("name", name);
+            fd.append("phone", phone);
+            fd.append("email", email);
+            fd.append("desc", desc);
+            fd.append("address", address);
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $.ajax({
+                url: url,
+                type: $('.update-type').attr('method'),
+                dataType: "JSON",
+                processData: false,
+                contentType: false,
+                data: fd,
+                success: function(responce) {
+                    if (responce.success == 200) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Yeay..!',
+                            text: responce.message
+                        });
+                        $('#modal-update-type').modal('hide');
+                        table.ajax.reload();
+                    } else {
+                        if (responce.message.name) {
+                            $('#edtName').addClass('is-invalid');
+                            $('#errorEdtName').html(responce.message.name);
+                        } else {
+                            $('#edtName').removeClass('is-invalid');
+                            $('#edtName').addClass('');
+                            $('#errorEdtName').html('');
+                        }
+                        if (responce.message.phone) {
+                            $('#edtphone').addClass('is-invalid');
+                            $('#errorEdtPhone').html(responce.message.phone);
+                        } else {
+                            $('#edtphone').removeClass('is-invalid');
+                            $('#edtphone').addClass('');
+                            $('#errorEdtPhone').html('');
+                        }
+                    }
+                }
+            })
+        })
+
+        // import type
+        $(document).on("click", "#importType", function(e) {
             e.preventDefault()
 
-            var file = $("#filewarehouse")[0].files[0];
+            var file = $("#filetype")[0].files[0];
 
             var fd = new FormData();
             fd.append("file", file)
@@ -323,8 +613,8 @@
             });
 
             $.ajax({
-                url: $('.import-warehouse').attr('action'),
-                type: $('.import-warehouse').attr('method'),
+                url: $('.import-type').attr('action'),
+                type: $('.import-type').attr('method'),
                 dataType: "JSON",
                 processData: false,
                 contentType: false,
@@ -343,7 +633,7 @@
             })
         })
 
-        // delete data warehouse
+        // delete data type
         $(document).on("click", "#delete", function(e) {
             e.preventDefault();
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CostumerController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\SubTypeController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TypeController;
@@ -98,14 +99,10 @@ Route::group(['middleware' => ['auth', 'checklevels:Admin']], function () {
     Route::get('itemlist/exportPDF', [ItemController::class, 'exportPDFItem'])->name('itemlist.exportPDF');
     Route::get('itemlist/details/{id}', [ItemController::class, 'details'])->name('itemlist.details');
     Route::resource('itemlist', ItemController::class);
-});
-
-Route::group(['middleware' => ['auth', 'checklevels:Admin,Cashier']], function () {
-    // route home
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    // route user
-    Route::get('user/profile/{id}', [UserController::class, 'profile'])->name('user.profile');
-    Route::post('user/profile/{id}', [UserController::class, 'profileUpdate'])->name('user.updateProfile');
-    Route::post('user/change-password/{id}', [UserController::class, 'changePassword'])->name('user.changePassword');
-    Route::resource('user', UserController::class);
+    // route order purchase
+    Route::get('purchaseorderlist/fetch', [PurchaseOrderController::class, 'fetch'])->name('purchaseorderlist.fetch');
+    Route::post('purchaseorderlist/destroySelected', [PurchaseOrderController::class, 'destroySelected'])->name('purchaseorderlist.destroySelected');
+    Route::post('purchaseorderlist/import', [PurchaseOrderController::class, 'importPurchaseOrder'])->name('purchaseorderlist.import');
+    Route::get('purchaseorderlist/exportPDF', [PurchaseOrderController::class, 'exportPDFimportPurchaseOrder'])->name('purchaseorderlist.exportPDF');
+    Route::resource('purchaseorderlist', PurchaseOrderController::class);
 });

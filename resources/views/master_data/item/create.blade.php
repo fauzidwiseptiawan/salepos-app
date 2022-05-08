@@ -323,10 +323,10 @@
     <script>
         //Date picker
         $('#datestart').datetimepicker({
-            format: 'L'
+            format: 'DD/MM/YYYY'
         });
         $('#dateend').datetimepicker({
-            format: 'L'
+            format: 'DD/MM/YYYY'
         });
 
         // display form promosi
