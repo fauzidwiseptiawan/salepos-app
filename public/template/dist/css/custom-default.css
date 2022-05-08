@@ -1,0 +1,43 @@
+.dt-button.dropdown-item {
+	background: #007bff;
+}
+.dt-buttons.flex-wrap{
+	text-align: center;
+}
+
+.buttons-pdf {
+	background: #dc3545;
+	border: none;
+}
+
+.buttons-csv {
+	background: #28a745;
+	border: none;
+}
+
+.buttons-print {
+	background: #ffc107;
+	border: none;
+}
+
+.buttons-collection {
+	background: #007bff;
+	border: none;
+}
+
+.checkmark {
+	top: 0;
+	left: 0;
+	height: 15px;
+	width: 15px;
+}
+
+.item-detail{
+  padding: 1%;
+}
+.text-alert{
+	font-style: italic;
+	margin-left: 0.6%;
+	margin-bottom: -2%;
+	font-size: 13px;
+}
