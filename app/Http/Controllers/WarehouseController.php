@@ -34,8 +34,8 @@ class WarehouseController extends Controller
                                 Aksi
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" id="show" data-toggle="modal" href="' . route('warehouselist.show', $warehouse->id) . '" value="' . $warehouse->id . '"><i class="fas fa-edit"></i> Edit</a>
-                                <a class="dropdown-item" id="delete" href="' . route('warehouselist.destroy', $warehouse->id) . '" value="' . $warehouse->id . '"><i class="fas fa-trash"></i> Hapus</a>
+                                <a class="dropdown-item" id="show" href="javascript:void(0)" value="' . $warehouse->id . '"><i class="fas fa-edit"></i> Edit</a>
+                                <a class="dropdown-item" id="delete" href="javascript:void(0)" value="' . $warehouse->id . '"><i class="fas fa-trash"></i> Hapus</a>
                             </div>
                         </div>';
             })
@@ -65,7 +65,6 @@ class WarehouseController extends Controller
             'name.unique' => 'Maaf nama gudang sudah terdaftar!',
             'phone.required' => 'Nomor telpon wajib diisi!',
             'phone.unique' => 'Maaf Nomor telpon sudah terdaftar!',
-            'desc.required' => 'Keterangan wajib diisi!'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -95,13 +94,11 @@ class WarehouseController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:warehouse,name,' . $warehouse->id,
             'phone' => 'required|unique:warehouse,phone,' . $warehouse->id,
-            'desc' => 'required'
         ], [
             'name.required' => 'Nama gudang wajib diisi!',
             'name.unique' => 'Maaf nama gudang sudah terdaftar!',
             'phone.required' => 'Nomor telpon wajib diisi!',
             'phone.unique' => 'Maaf Nomor telpon sudah terdaftar!',
-            'desc.required' => 'Keterangan wajib diisi!'
         ]);
         if ($validator->fails()) {
             return response()->json([

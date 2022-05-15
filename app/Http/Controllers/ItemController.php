@@ -45,7 +45,11 @@ class ItemController extends Controller
                 return $item->unit->unit;
             })
             ->addColumn('brand', function ($item) {
-                return $item->brand->brand;
+                if ($item->brand_id != null) {
+                    return $item->brand->brand;
+                } else {
+                    return '-';
+                }
             })
             ->addColumn('purchase_price', function ($item) {
                 return format_uang($item->purchase_price);
@@ -54,13 +58,18 @@ class ItemController extends Controller
                 return format_uang($item->selling_price);
             })
             ->addColumn('type', function ($item) {
-                return $item->type->type;
+                if ($item->type_id != null) {
+                    return $item->type->type;
+                } else {
+                    return '-';
+                }
             })
             ->addColumn('supplier', function ($item) {
-                return $item->supplier->supplier_name;
-            })
-            ->addColumn('select_all', function ($item) {
-                return '<input class="checkmark select-form" type="checkbox" value="' . $item->id . '">';
+                if ($item->supplier_id != null) {
+                    return $item->supplier->supplier_name;
+                } else {
+                    return '-';
+                }
             })
             ->addColumn('select_all', function ($item) {
                 return '<input class="checkmark select-form" type="checkbox" value="' . $item->id . '">';
@@ -104,9 +113,7 @@ class ItemController extends Controller
     // function detail item by id
     public function details($id)
     {
-        $items = Item::with(['brand', 'supplier', 'unit', 'type', 'subtype'])->whereHas('brand', function ($query) use ($id) {
-            $query->where('item.id', $id);
-        })->orderBy("item_name", "ASC")->get();
+        $items = Item::where('id', $id)->with(['brand', 'supplier', 'unit', 'type', 'subtype'])->first();
 
         return response()->json([
             'success' => 200,
@@ -136,11 +143,11 @@ class ItemController extends Controller
             $validator = Validator::make($request->all(), [
                 'item_code' => 'required|unique:item,item_code',
                 'item_name' => 'required|unique:item,item_name',
-                'barcode' => 'unique:item,barcode',
+                'barcode' => 'nullable|unique:item',
                 'unit_id' => 'required',
-                'purchase_price' => 'required',
-                'selling_price' => 'required',
-                'promotion_price' => 'required',
+                'purchase_price' => 'required|regex:/^[0-9.]+$/',
+                'selling_price' => 'required|regex:/^[0-9.]+$/',
+                'promotion_price' => 'required|regex:/^[0-9.]+$/',
                 'start_date' => 'required',
                 'end_date' => 'required',
             ], [
@@ -160,10 +167,10 @@ class ItemController extends Controller
             $validator = Validator::make($request->all(), [
                 'item_code' => 'required|unique:item,item_code',
                 'item_name' => 'required|unique:item,item_name',
-                'barcode' => 'unique:item,barcode',
+                'barcode' => 'nullable|unique:item.barcode',
                 'unit_id' => 'required',
-                'purchase_price' => 'required',
-                'selling_price' => 'required',
+                'purchase_price' => 'required|regex:/^[0-9.]+$/',
+                'selling_price' => 'required|regex:/^[0-9.]+$/',
             ], [
                 'item_code.required' => 'Kode item wajib diisi!',
                 'item_code.unique' => 'Maaf kode item sudah terdaftar!',
@@ -206,12 +213,12 @@ class ItemController extends Controller
                         'selling_price' => $request->selling_price,
                         'rack' => $request->rack,
                         'is_batch' => $request->is_batch,
-                        'promotion' => $request->promotion,
                         'minimum_stock' => $request->minimum_stock,
                         'desc' => $request->desc,
+                        'promotion' => $request->promotion,
                         'promotion_price' => $request->promotion_price,
-                        'start_date' => date("Y-m-d H:i:s", strtotime($request->start_date)),
-                        'end_date' => date("Y-m-d H:i:s", strtotime($request->end_date)),
+                        'start_date' => $request->start_date != null ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null,
+                        'end_date' => $request->end_date != null ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null,
                         'image' => $file_name,
                     ]);
                     return response()->json([
@@ -241,8 +248,8 @@ class ItemController extends Controller
                     'minimum_stock' => $request->minimum_stock,
                     'promotion' => $request->promotion,
                     'promotion_price' => $request->promotion_price,
-                    'start_date' => date("Y-m-d H:i:s", strtotime($request->start_date)),
-                    'end_date' => date("Y-m-d H:i:s", strtotime($request->end_date)),
+                    'start_date' => $request->start_date != null ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null,
+                    'end_date' => $request->end_date != null ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null,
                     'desc' => $request->desc,
                 ]);
                 return response()->json([
@@ -259,22 +266,50 @@ class ItemController extends Controller
         // fetch data id from database
         $item = Item::find($id);
         // input validation
-        $validator = Validator::make($request->all(), [
-            'item_code' => 'required|unique:item,item_code,' . $item->id,
-            'item_name' => 'required|unique:item,item_name,' . $item->id,
-            'barcode' => 'required|unique:item,barcode,' . $item->id,
-            'purchase_price' => 'required',
-            'selling_price' => 'required',
-        ], [
-            'item_code.required' => 'Item wajib diisi!',
-            'item_code.unique' => 'Maaf item sudah terdaftar!',
-            'item_name.required' => 'Nama Item wajib diisi!',
-            'item_name.unique' => 'Maaf nama item sudah terdaftar!',
-            'barcode.required' => 'Barcode wajib diisi!',
-            'barcode.unique' => 'Maaf barcode sudah terdaftar!',
-            'purchase_price.required' => 'Harga pokok wajib diisi!',
-            'selling_price.required' => 'Harga jual wajib diisi!',
-        ]);
+        // input validation
+        if ($request->promotion != 0) {
+            $validator = Validator::make($request->all(), [
+                'item_code' => 'required|unique:item,item_code,' . $item->id,
+                'item_name' => 'required|unique:item,item_name,' . $item->id,
+                'barcode' => 'nullable|unique:item,barcode,' . $item->id,
+                'unit_id' => 'required',
+                'purchase_price' => 'required|regex:/^[0-9.]+$/',
+                'selling_price' => 'required|regex:/^[0-9.]+$/',
+                'promotion_price' => 'required|regex:/^[0-9.]+$/',
+                'start_date' => 'required',
+                'end_date' => 'required',
+            ], [
+                'item_code.required' => 'Kode item wajib diisi!',
+                'item_code.unique' => 'Maaf kode item sudah terdaftar!',
+                'item_name.required' => 'Nama Item wajib diisi!',
+                'item_name.unique' => 'Maaf nama item sudah terdaftar!',
+                'unit_id.required' => 'Satuan wajib diisi!',
+                'barcode.unique' => 'Maaf barcode sudah terdaftar!',
+                'purchase_price.required' => 'Harga pokok wajib diisi!',
+                'selling_price.required' => 'Harga jual wajib diisi!',
+                'promotion_price.required' => 'Harga promosi wajib diisi!',
+                'start_date.required' => 'Tanggal mulai wajib diisi!',
+                'end_date.required' => 'Tanggal akhir Item wajib diisi!',
+            ]);
+        } else {
+            $validator = Validator::make($request->all(), [
+                'item_code' => 'required|unique:item,item_code,' . $item->id,
+                'item_name' => 'required|unique:item,item_name,' . $item->id,
+                'barcode' => 'nullable|unique:item,barcode,' . $item->id,
+                'unit_id' => 'required',
+                'purchase_price' => 'required|regex:/^[0-9.]+$/',
+                'selling_price' => 'required|regex:/^[0-9.]+$/',
+            ], [
+                'item_code.required' => 'Kode item wajib diisi!',
+                'item_code.unique' => 'Maaf kode item sudah terdaftar!',
+                'item_name.required' => 'Nama Item wajib diisi!',
+                'item_name.unique' => 'Maaf nama item sudah terdaftar!',
+                'unit_id.required' => 'Satuan wajib diisi!',
+                'barcode.unique' => 'Maaf barcode sudah terdaftar!',
+                'purchase_price.required' => 'Harga pokok wajib diisi!',
+                'selling_price.required' => 'Harga jual wajib diisi!',
+            ]);
+        }
         // check if validation fails
         if ($validator->fails()) {
             return response()->json([
@@ -315,8 +350,8 @@ class ItemController extends Controller
                         'desc' => $request->desc,
                         'promotion' => $request->promotion,
                         'promotion_price' => $request->promotion_price,
-                        'start_date' => date("Y-m-d H:i:s", strtotime($request->start_date)),
-                        'end_date' => date("Y-m-d H:i:s", strtotime($request->end_date)),
+                        'start_date' => $request->start_date != null ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null,
+                        'end_date' => $request->end_date != null ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null,
                         'image' => $file_name,
                     ]);
                     return response()->json([
@@ -346,8 +381,8 @@ class ItemController extends Controller
                     'minimum_stock' => $request->minimum_stock,
                     'promotion' => $request->promotion,
                     'promotion_price' => $request->promotion_price,
-                    'start_date' => date("Y-m-d H:i:s", strtotime($request->start_date)),
-                    'end_date' => date("Y-m-d H:i:s", strtotime($request->end_date)),
+                    'start_date' => $request->start_date != null ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null,
+                    'end_date' => $request->end_date != null ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null,
                     'desc' => $request->desc,
                 ]);
                 return response()->json([

@@ -101,7 +101,11 @@ Route::group(['middleware' => ['auth', 'checklevels:Admin']], function () {
     Route::resource('itemlist', ItemController::class);
     // route order purchase
     Route::get('purchaseorderlist/fetch', [PurchaseOrderController::class, 'fetch'])->name('purchaseorderlist.fetch');
+    Route::get('purchaseorderlist/fetchSupplier', [PurchaseOrderController::class, 'fetchSupplier'])->name('purchaseorderlist.fetchSupplier');
+    Route::get('purchaseorderlist/fetchItem', [PurchaseOrderController::class, 'fetchItem'])->name('purchaseorderlist.fetchItem');
     Route::post('purchaseorderlist/destroySelected', [PurchaseOrderController::class, 'destroySelected'])->name('purchaseorderlist.destroySelected');
+    Route::get('purchaseorderlist/getSupplier/{id}', [PurchaseOrderController::class, 'getSupplier'])->name('purchaseorderlist.getSupplier');
+    Route::get('purchaseorderlist/getItem/{id}', [PurchaseOrderController::class, 'getItem'])->name('purchaseorderlist.getItem');
     Route::post('purchaseorderlist/import', [PurchaseOrderController::class, 'importPurchaseOrder'])->name('purchaseorderlist.import');
     Route::get('purchaseorderlist/exportPDF', [PurchaseOrderController::class, 'exportPDFimportPurchaseOrder'])->name('purchaseorderlist.exportPDF');
     Route::resource('purchaseorderlist', PurchaseOrderController::class);

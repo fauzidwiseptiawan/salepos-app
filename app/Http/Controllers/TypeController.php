@@ -35,8 +35,8 @@ class TypeController extends Controller
                                 Aksi
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" id="show" data-toggle="modal" href="' . route('typelist.show', $type->id) . '" value="' . $type->id . '"><i class="fas fa-edit"></i> Edit</a>
-                                <a class="dropdown-item" id="delete" href="' . route('typelist.destroy', $type->id) . '" value="' . $type->id . '"><i class="fas fa-trash"></i> Hapus</a>
+                                <a class="dropdown-item" id="show" data-toggle="modal" href="javascript:void(0)" value="' . $type->id . '"><i class="fas fa-edit"></i> Edit</a>
+                                <a class="dropdown-item" id="delete" href="javascript:void(0)" value="' . $type->id . '"><i class="fas fa-trash"></i> Hapus</a>
                             </div>
                         </div>';
             })

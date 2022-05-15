@@ -38,8 +38,8 @@ class SubTypeController extends Controller
                                 Aksi
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" id="show" data-toggle="modal" href="' . route('subtypelist.show', $subtype->id) . '" value="' . $subtype->id . '"><i class="fas fa-edit"></i> Edit</a>
-                                <a class="dropdown-item" id="delete" href="' . route('subtypelist.destroy', $subtype->id) . '" value="' . $subtype->id . '"><i class="fas fa-trash"></i> Hapus</a>
+                                <a class="dropdown-item" id="show" href="javascript:void(0)" value="' . $subtype->id . '"><i class="fas fa-edit"></i> Edit</a>
+                                <a class="dropdown-item" id="delete" href="javascript:void(0)" value="' . $subtype->id . '"><i class="fas fa-trash"></i> Hapus</a>
                             </div>
                         </div>';
             })

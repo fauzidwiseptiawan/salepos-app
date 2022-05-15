@@ -133,6 +133,8 @@
     <script src="{{ asset('template') }}/dist/js/adminlte.js"></script>
     <!-- Select2 -->
     <script src="{{ asset('template') }}/plugins/select2/js/select2.full.min.js"></script>
+    <!-- costume js -->
+    <script src="{{ asset('template') }}/dist/js/costume.js"></script>
     <!-- JS Library -->
     @stack('page-scripts')
     <!-- Page Specific JS File -->

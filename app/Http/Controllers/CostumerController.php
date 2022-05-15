@@ -35,8 +35,8 @@ class CostumerController extends Controller
                                 Aksi
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" id="show" data-toggle="modal" href="' . route('costumerlist.show', $costumer->id) . '" value="' . $costumer->id . '"><i class="fas fa-edit"></i> Edit</a>
-                                <a class="dropdown-item" id="delete" href="' . route('costumerlist.destroy', $costumer->id) . '" value="' . $costumer->id . '"><i class="fas fa-trash"></i> Hapus</a>
+                                <a class="dropdown-item" id="show" href="javascript:void(0)" value="' . $costumer->id . '"><i class="fas fa-edit"></i> Edit</a>
+                                <a class="dropdown-item" id="delete" href="javascript:void(0)" value="' . $costumer->id . '"><i class="fas fa-trash"></i> Hapus</a>
                             </div>
                         </div>';
             })

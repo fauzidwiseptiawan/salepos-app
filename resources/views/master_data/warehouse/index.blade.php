@@ -530,7 +530,7 @@
             })
         })
 
-        // add type
+        // update type
         $(document).on("click", "#updateWarehouse", function(e) {
             e.preventDefault();
 

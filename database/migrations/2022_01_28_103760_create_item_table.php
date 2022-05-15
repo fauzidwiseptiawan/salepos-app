@@ -15,15 +15,15 @@ class CreateItemTable extends Migration
     {
         Schema::create('item', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('type_id')->nullable();
+            $table->integer('type_id')->nullable()->unsigned();
             $table->foreign('type_id')->references('id')->on('type');
-            $table->unsignedInteger('subtype_id')->nullable();
+            $table->integer('subtype_id')->nullable()->unsigned();
             $table->foreign('subtype_id')->references('id')->on('subtype');
-            $table->unsignedInteger('brand_id')->nullable();
+            $table->integer('brand_id')->nullable()->unsigned();
             $table->foreign('brand_id')->references('id')->on('brand');
-            $table->unsignedInteger('unit_id');
+            $table->integer('unit_id')->unsigned();
             $table->foreign('unit_id')->references('id')->on('unit');
-            $table->unsignedInteger('supplier_id')->nullable();
+            $table->integer('supplier_id')->nullable()->unsigned();
             $table->foreign('supplier_id')->references('id')->on('supplier');
             $table->string('item_type', 50)->nullable();
             $table->string('item_code', 10)->unique();

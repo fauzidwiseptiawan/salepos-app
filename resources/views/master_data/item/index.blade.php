@@ -513,38 +513,64 @@
                 },
                 success: function(responce) {
                     $('#modal-detail-item').modal('show');
-                    console.log(responce);
-                    // $('#modal-update-type').modal('show');
-                    $('#itemCode').text(responce.data[0].item_code);
-                    $('#barcode').text(responce.data[0].barcode);
-                    $('#itemName').text(responce.data[0].item_name);
-                    if (responce.data[0].stock == null) {
+                    $('#itemCode').text(responce.data.item_code);
+                    $('#itemName').text(responce.data.item_name);
+                    $('#purchasePrice').text(format_uang(responce.data.purchase_price));
+                    $('#sellingPrice').text(format_uang(responce.data.selling_price));
+                    $('#unit').text(responce.data.unit.unit);
+                    if (responce.data.barcode == null) {
+                        $('#barcode').text('-');
+                    } else {
+                        $('#barcode').text(responce.data.barcode);
+                    }
+                    if (responce.data.rack == null) {
+                        $('#rack').text('-');
+                    } else {
+                        $('#rack').text(responce.data.rack);
+                    }
+                    if (responce.data.minimum_stock == null) {
+                        $('#stockMinimum').text('0');
+                    } else {
+                        $('#stockMinimum').text(responce.data.minimum_stock);
+                    }
+                    if (responce.data.stock == null) {
                         $('#stock').text('0');
                     } else {
-                        $('#stock').text(responce.data[0].stock);
+                        $('#stock').text(responce.data.stock);
                     }
-                    $('#purchasePrice').text(responce.data[0].purchase_price);
-                    $('#sellingPrice').text(responce.data[0].selling_price);
-                    $('#rack').text(responce.data[0].rack);
-                    $('#stockMinimum').text(responce.data[0].minimum_stock);
-                    $('#brand').text(responce.data[0].brand.brand);
-                    $('#type').text(responce.data[0].type.type);
-                    $('#unit').text(responce.data[0].unit.unit);
-                    $('#subType').text(responce.data[0].subtype.subtype);
-                    $('#supplier').text(responce.data[0].supplier.supplier_name);
-                    if (responce.data[0].desc == null) {
+                    if (responce.data.brand == null) {
+                        $('#brand').text('-');
+                    } else {
+                        $('#brand').text(responce.data.brand.brand);
+                    }
+                    if (responce.data.type == null) {
+                        $('#type').text('-');
+                    } else {
+                        $('#type').text(responce.data.type.type);
+                    }
+                    if (responce.data.subtype == null) {
+                        $('#subType').text('-');
+                    } else {
+                        $('#subType').text(responce.data.subtype.subtype);
+                    }
+                    if (responce.data.supplier == null) {
+                        $('#supplier').text('-');
+                    } else {
+                        $('#supplier').text(responce.data.supplier.supplier_name);
+                    }
+                    if (responce.data.desc == null) {
                         $('#desc').text('-');
                     } else {
-                        $('#desc').text(responce.data[0].desc);
+                        $('#desc').text(responce.data.desc);
                     }
-                    if (responce.data[0].promotion_price && responce.data[0].start_date && responce
-                        .data[0]
+                    if (responce.data.promotion_price && responce.data.start_date && responce
+                        .data
                         .end_date != null) {
-                        $('#promotionPrice').text(responce.data[0].promotion_price);
-                        $('#startDate').text(moment(new Date(responce.data[0].start_date)).format(
-                            "DD/MM/YYYY"));
-                        $('#endDate').text(moment(new Date(responce.data[0].end_date)).format(
-                            "DD/MM/YYYY"));
+                        $('#promotionPrice').text(format_uang(responce.data.promotion_price));
+                        $('#startDate').text(moment(new Date(responce.data.start_date)).format(
+                            "MM/DD/YYYY"));
+                        $('#endDate').text(moment(new Date(responce.data.end_date)).format(
+                            "MM/DD/YYYY"));
                     } else {
                         $('#promotionPrice').text('-');
                         $('#startDate').text('-');
@@ -558,7 +584,7 @@
         $(document).on("click", "#importitem", function(e) {
             e.preventDefault()
 
-            var file = $("#fileitem")[0].files[0];
+            var file = $("#fileitem").files;
 
             var fd = new FormData();
             fd.append("file", file)

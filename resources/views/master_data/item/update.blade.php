@@ -41,7 +41,7 @@
                                         <input type="hidden" name="stock" value="0" id="stock">
                                         <div class="form-group">
                                             <label>Tipe Item</label>
-                                            <select value="" id="itemType" class="form-control select2bs4" name="item_type"
+                                            <select id="itemType" class="form-control select2bs4" name="item_type"
                                                 style="width: 100%;">
                                                 <option {{ $item->item_type == '1' ? 'selected' : '' }} value="1">
                                                     Barang</option>
@@ -73,8 +73,9 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Jenis</label>
-                                            <select value="" id="typeId" class="form-control select2bs4" name="type_id"
+                                            <select id="typeId" class="form-control select2bs4" name="type_id"
                                                 style="width: 100%;">
+                                                <option></option>
                                                 @foreach ($type as $items)
                                                     <option value="{{ $items->id }}"
                                                         @if ($items->id == $item->type_id) selected @endif>
@@ -87,9 +88,9 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub Jenis</label>
-                                            <select value="" id="subTypeId" class="form-control select2bs4"
-                                                style="width: 100%;" name="subtype_id">
-                                                <option disabled>Select...</option>
+                                            <select id="subTypeId" class="form-control select2bs4" style="width: 100%;"
+                                                name="subtype_id">
+                                                <option></option>
                                                 @foreach ($subtype as $items)
                                                     <option value="{{ $items->id }}"
                                                         @if ($items->id == $item->subtype_id) selected @endif>
@@ -101,9 +102,9 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Merek</label>
-                                            <select value="" id="brandId" class="form-control select2bs4"
-                                                style="width: 100%;" name="brand_id">
-                                                <option disabled>Select...</option>
+                                            <select id="brandId" class="form-control select2bs4" style="width: 100%;"
+                                                name="brand_id">
+                                                <option></option>
                                                 @foreach ($brand as $items)
                                                     <option value="{{ $items->id }}"
                                                         @if ($items->id == $item->brand_id) selected @endif>
@@ -118,9 +119,9 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Satuan *</strong></label>
-                                            <select value="" id="unitId" class="form-control select2bs4"
-                                                style="width: 100%;" name="unit_id">
-                                                <option disabled>Select...</option>
+                                            <select id="unitId" class="form-control select2bs4" style="width: 100%;"
+                                                name="unit_id">
+                                                <option></option>
                                                 @foreach ($unit as $items)
                                                     <option value="{{ $items->id }}"
                                                         @if ($items->id == $item->unit_id) selected @endif>
@@ -133,9 +134,9 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Supplier </label>
-                                            <select value="" id="supplierId" class="form-control select2bs4"
-                                                name="supplier_id" style="width: 100%;">
-                                                <option selected disabled>Select...</option>
+                                            <select id="supplierId" class="form-control select2bs4" name="supplier_id"
+                                                style="width: 100%;">
+                                                <option></option>
                                                 @foreach ($supplier as $items)
                                                     <option value="{{ $items->id }}"
                                                         @if ($items->id == $item->supplier_id) selected @endif>
@@ -167,7 +168,8 @@
                                         <div class="form-group">
                                             <label for="purchasePrice">Harga Pokok *</strong></label>
                                             <input type="text" class="form-control" id="purchasePrice"
-                                                name="purchase_price" value="{{ $item->purchase_price }}">
+                                                name="purchase_price" value="{{ format_uang($item->purchase_price) }}"
+                                                onkeyup="format_uang(this)">
                                             <small id="errorPurchasePrice" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -175,7 +177,8 @@
                                         <div class="form-group">
                                             <label for="sellingPrice">Harga Jual *</strong></label>
                                             <input type="text" class="form-control" id="sellingPrice" name="selling_price"
-                                                value="{{ $item->selling_price }}">
+                                                value="{{ format_uang($item->selling_price) }}"
+                                                onkeyup="format_uang(this)">
                                             <small id="errorSellingPrice" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -220,14 +223,14 @@
                                         <div class="form-group">
                                             <div class="custom-control custom-checkbox">
                                                 <input class="custom-control-input" type="checkbox" id="isBatch" value="1"
-                                                    name="is_batch" {{ $item->is_batch == 1 ? ' checked' : '' }}>
+                                                    name="is_batch" {{ $item->is_batch != 0 ? ' checked' : '' }}>
                                                 <label for="isBatch" class="custom-control-label">Produk ini
                                                     memiliki batch dan tanggal kadaluarsa</label>
                                             </div>
                                             <div class="custom-control custom-checkbox">
                                                 <input class="custom-control-input" type="checkbox" id="promotion"
                                                     name="promotion" value="1"
-                                                    {{ $item->promotion_price != 1 ? ' checked' : '' }}>
+                                                    {{ $item->promotion_price != 0 ? ' checked' : '' }}>
                                                 <label for="promotion" class="custom-control-label">Harga
                                                     Promosi</label>
                                             </div>
@@ -235,11 +238,12 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-4" id="promotionPrice">
-                                        <div class="form-group">
+                                    <div class="col-md-4">
+                                        <div class="form-group" id="promotionPrice">
                                             <label>Harga Promosi *</strong></label>
                                             <input type="text" class="form-control" id="promotionPriceVal"
-                                                name="promotion_price" value="{{ $item->promotion_price }}">
+                                                name="promotion_price" value="{{ format_uang($item->promotion_price) }}"
+                                                onkeyup="format_uang(this)">
                                             <small id="errorPromotion" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -250,8 +254,8 @@
                                                 <input type="text" class="form-control datetimepicker-input"
                                                     data-target="#datestart" id="startDate" name="start_date"
                                                     @if ($item->start_date == '') value="{{ $item->start_date }}"
-                                                    @else
-                                                        value="{{ date('m-d-Y', strtotime($item->start_date)) }}" @endif />
+                                                            @else
+                                                                value="{{ date('m-d-Y', strtotime($item->start_date)) }}" @endif />
                                                 <div class="input-group-append" data-target="#datestart"
                                                     data-toggle="datetimepicker">
                                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -267,8 +271,8 @@
                                                 <input type="text" class="form-control datetimepicker-input"
                                                     data-target="#dateend" id="endDate" name="end_date"
                                                     @if ($item->end_date == '') value="{{ $item->end_date }}"
-                                                    @else
-                                                        value="{{ date('m-d-Y', strtotime($item->end_date)) }}" @endif />
+                                                            @else
+                                                                value="{{ date('m-d-Y', strtotime($item->end_date)) }}" @endif />
                                                 <div class="input-group-append" data-target="#dateend"
                                                     data-toggle="datetimepicker">
                                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -359,6 +363,9 @@
                 $("#promotionPrice").hide(300);
                 $("#dateStart").hide(300);
                 $("#dateEnd").hide(300);
+                $("#promotionPriceVal").val('')
+                $("#startDate").val('')
+                $("#endDate").val('')
             }
         });
 
@@ -366,7 +373,9 @@
         // select subtype
         $(document).ready(function() {
             $('.select2bs4').select2({
-                theme: 'bootstrap4'
+                theme: 'bootstrap4',
+                placeholder: "Select...",
+                allowClear: false
             })
             $('#typeId').on('change', function() {
                 let id = $(this).val()
@@ -447,7 +456,7 @@
             var saleStatus = $("#saleStatus1").is(':checked');
             var rack = $("#rack").val();
             var isBatch = $("#isBatch").is(':checked');
-            var promotion = $("#promotion").is(':checked')
+            var promotion = $("#promotion").is(':checked');
             var promotionPrice = $("#promotionPriceVal").val();
             var dateStart = $("#startDate").val();
             var dateEnd = $("#endDate").val();
@@ -468,20 +477,25 @@
             fd.append("minimum_stock", stockMinimum);
             fd.append("stock", stock);
             fd.append("barcode", barcode);
-            fd.append("purchase_price", purchasePrice);
-            fd.append("selling_price", sellingPrice);
+            fd.append("purchase_price", parseFloat(purchasePrice.replaceAll('.', '')));
+            fd.append("selling_price", parseFloat(sellingPrice.replaceAll('.', '')));
             fd.append("rack", rack);
             fd.append("tax_include", taxInclude);
-            fd.append("promotion_price", promotionPrice);
             fd.append("start_date", dateStart);
             fd.append("end_date", dateEnd);
             fd.append("desc", desc);
             fd.append("image", image);
 
-            if (promotion == '') {
-                fd.append("is_batch", '0');
+            if (promotionPrice == '') {
+                fd.append("promotion_price", promotionPrice);
             } else {
-                fd.append("is_batch", '1');
+                fd.append("promotion_price", parseFloat(promotionPrice.replaceAll('.', '')));
+            }
+
+            if (promotion == '') {
+                fd.append("promotion", '0');
+            } else {
+                fd.append("promotion", '1');
             }
 
             if (isBatch == '') {

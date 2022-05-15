@@ -41,7 +41,7 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Tipe Item</label>
-                                            <select value="" id="itemType" class="form-control select2bs4" name="item_type"
+                                            <select id="itemType" class="form-control select2bs4" name="item_type"
                                                 style="width: 100%;">
                                                 <option value="1" selected>Barang</option>
                                                 <option value="2">Jasa</option>
@@ -68,9 +68,9 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Jenis</label>
-                                            <select value="" id="typeId" class="form-control select2bs4" name="type_id"
+                                            <select id="typeId" class="form-control select2bs4" name="type_id"
                                                 style="width: 100%;">
-                                                <option selected disabled>Select...</option>
+                                                <option></option>
                                                 @foreach ($type as $item)
                                                     @if (old('type_id') == $item->id)
                                                         <option value="{{ $item->id }}">{{ $item->type }}</option>
@@ -85,18 +85,18 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub Jenis</label>
-                                            <select value="" id="subTypeId" class="form-control select2bs4"
-                                                style="width: 100%;" name="subtype_id">
-                                                <option selected disabled>Select...</option>
+                                            <select id="subTypeId" class="form-control select2bs4" style="width: 100%;"
+                                                name="subtype_id">
+                                                <option></option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Merek</label>
-                                            <select value="" id="brandId" class="form-control select2bs4"
-                                                style="width: 100%;" name="brand_id">
-                                                <option selected disabled>Select...</option>
+                                            <select id="brandId" class="form-control select2bs4" style="width: 100%;"
+                                                name="brand_id">
+                                                <option></option>
                                                 @foreach ($brand as $item)
                                                     @if (old('brand_id') == $item->id)
                                                         <option value="{{ $item->id }}">{{ $item->brand }}</option>
@@ -113,9 +113,9 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Satuan *</strong></label>
-                                            <select value="" id="unitId" class="form-control select2bs4"
-                                                style="width: 100%;" name="unit_id">
-                                                <option selected disabled>Select...</option>
+                                            <select id="unitId" class="form-control select2bs4" style="width: 100%;"
+                                                name="unit_id">
+                                                <option></option>
                                                 @foreach ($unit as $item)
                                                     @if (old('unit_id') == $item->id)
                                                         <option value="{{ $item->id }}">{{ $item->unit }}</option>
@@ -130,9 +130,9 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Supplier </label>
-                                            <select value="" id="supplierId" class="form-control select2bs4"
-                                                name="supplier_id" style="width: 100%;">
-                                                <option selected disabled>Select...</option>
+                                            <select id="supplierId" class="form-control select2bs4" name="supplier_id"
+                                                style="width: 100%;">
+                                                <option></option>
                                                 @foreach ($supplier as $item)
                                                     @if (old('supplier_id') == $item->id)
                                                         <option value="{{ $item->id }}">[{{ $item->supplier_code }}]
@@ -171,15 +171,15 @@
                                         <div class="form-group">
                                             <label for="purchasePrice">Harga Pokok *</strong></label>
                                             <input type="text" class="form-control" id="purchasePrice"
-                                                name="purchase_price">
+                                                name="purchase_price" onkeyup="format_uang(this)">
                                             <small id="errorPurchasePrice" class="form-text text-muted"></small>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="sellingPrice">Harga Jual *</strong></label>
-                                            <input type="text" class="form-control" id="sellingPrice"
-                                                name="selling_price">
+                                            <input type="text" class="form-control" id="sellingPrice" name="selling_price"
+                                                onkeyup="format_uang(this)">
                                             <small id="errorSellingPrice" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -238,7 +238,7 @@
                                         <div class="form-group">
                                             <label>Harga Promosi *</strong></label>
                                             <input type="text" class="form-control" id="promotionPriceVal"
-                                                name="promotion_price">
+                                                name="promotion_price" onkeyup="format_uang(this)">
                                             <small id="errorPromotion" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -350,7 +350,9 @@
         $(document).ready(function() {
             //Initialize Select2 Elements
             $('.select2bs4').select2({
-                theme: 'bootstrap4'
+                theme: 'bootstrap4',
+                placeholder: "Select...",
+                allowClear: false
             })
             $('#typeId').on('change', function() {
                 let id = $(this).val()
@@ -449,15 +451,20 @@
             fd.append("minimum_stock", stockMinimum);
             fd.append("stock", stock);
             fd.append("barcode", barcode);
-            fd.append("purchase_price", purchasePrice);
-            fd.append("selling_price", sellingPrice);
+            fd.append("purchase_price", parseFloat(purchasePrice.replaceAll('.', '')));
+            fd.append("selling_price", parseFloat(sellingPrice.replaceAll('.', '')));
             fd.append("rack", rack);
             fd.append("tax_include", taxInclude);
-            fd.append("promotion_price", promotionPrice);
             fd.append("start_date", dateStart);
             fd.append("end_date", dateEnd);
             fd.append("desc", desc);
             fd.append("image", image);
+
+            if (promotionPrice == '') {
+                fd.append("promotion_price", promotionPrice);
+            } else {
+                fd.append("promotion_price", parseFloat(promotionPrice.replaceAll('.', '')));
+            }
 
             if (promotion == '') {
                 fd.append("promotion", '0');
@@ -544,6 +551,14 @@
                             $('#sellingPrice').removeClass('is-invalid');
                             $('#sellingPrice').addClass('');
                             $('#errorSellingPrice').html('');
+                        }
+                        if (responce.message.barcode) {
+                            $('#barcode').addClass('is-invalid');
+                            $('#errorBarcode').html(responce.message.barcode);
+                        } else {
+                            $('#barcode').removeClass('is-invalid');
+                            $('#barcode').addClass('');
+                            $('#errorBarcode').html('');
                         }
                         if (responce.message.unit_id) {
                             $('#unitId').addClass('is-invalid');
