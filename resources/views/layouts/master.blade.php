@@ -44,6 +44,7 @@
     <link rel="stylesheet" href="{{ asset('template') }}/plugins/select2/css/select2.min.css">
     <link rel="stylesheet"
         href="{{ asset('template') }}/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <link rel="stylesheet" href="{{ asset('template') }}/plugins/bootsrap-datepicker/css/bootstrap-datepicker3.css">
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -135,6 +136,8 @@
     <script src="{{ asset('template') }}/plugins/select2/js/select2.full.min.js"></script>
     <!-- costume js -->
     <script src="{{ asset('template') }}/dist/js/costume.js"></script>
+    <!-- costume js -->
+    <script src="{{ asset('template') }}/plugins/bootsrap-datepicker/js/bootstrap-datepicker.min.js"></script>
     <!-- JS Library -->
     @stack('page-scripts')
     <!-- Page Specific JS File -->

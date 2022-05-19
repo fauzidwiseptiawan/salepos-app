@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,8 +15,6 @@ class OrderPurchase extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
     protected $fillable = [
-        'type_id',
-        'purchases_id',
         'reference_no',
         'user_id',
         'warehouse_id',
@@ -25,7 +24,8 @@ class OrderPurchase extends Model
         'total_discount',
         'grand_total',
         'purchase_status',
-        'payment_status',
+        // 'payment_status',
+        'send_date',
         'desc',
     ];
 

@@ -12,6 +12,7 @@ use App\Models\Supplier;
 use App\Models\Type;
 use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -143,7 +144,7 @@ class ItemController extends Controller
             $validator = Validator::make($request->all(), [
                 'item_code' => 'required|unique:item,item_code',
                 'item_name' => 'required|unique:item,item_name',
-                'barcode' => 'nullable|unique:item',
+                'barcode' => 'nullable|unique:item,barcode',
                 'unit_id' => 'required',
                 'purchase_price' => 'required|regex:/^[0-9.]+$/',
                 'selling_price' => 'required|regex:/^[0-9.]+$/',
@@ -167,7 +168,7 @@ class ItemController extends Controller
             $validator = Validator::make($request->all(), [
                 'item_code' => 'required|unique:item,item_code',
                 'item_name' => 'required|unique:item,item_name',
-                'barcode' => 'nullable|unique:item.barcode',
+                'barcode' => 'nullable|unique:item,barcode',
                 'unit_id' => 'required',
                 'purchase_price' => 'required|regex:/^[0-9.]+$/',
                 'selling_price' => 'required|regex:/^[0-9.]+$/',
@@ -217,8 +218,8 @@ class ItemController extends Controller
                         'desc' => $request->desc,
                         'promotion' => $request->promotion,
                         'promotion_price' => $request->promotion_price,
-                        'start_date' => $request->start_date != null ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null,
-                        'end_date' => $request->end_date != null ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null,
+                        'start_date' => $request->start_date != null ? Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d') : null,
+                        'end_date' => $request->start_date != null ? Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d') : null,
                         'image' => $file_name,
                     ]);
                     return response()->json([
@@ -248,8 +249,8 @@ class ItemController extends Controller
                     'minimum_stock' => $request->minimum_stock,
                     'promotion' => $request->promotion,
                     'promotion_price' => $request->promotion_price,
-                    'start_date' => $request->start_date != null ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null,
-                    'end_date' => $request->end_date != null ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null,
+                    'start_date' => $request->start_date != null ? Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d') : null,
+                    'end_date' => $request->start_date != null ? Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d') : null,
                     'desc' => $request->desc,
                 ]);
                 return response()->json([
@@ -350,8 +351,8 @@ class ItemController extends Controller
                         'desc' => $request->desc,
                         'promotion' => $request->promotion,
                         'promotion_price' => $request->promotion_price,
-                        'start_date' => $request->start_date != null ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null,
-                        'end_date' => $request->end_date != null ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null,
+                        'start_date' => $request->start_date != null ? Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d') : null,
+                        'end_date' => $request->start_date != null ? Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d') : null,
                         'image' => $file_name,
                     ]);
                     return response()->json([
@@ -381,8 +382,8 @@ class ItemController extends Controller
                     'minimum_stock' => $request->minimum_stock,
                     'promotion' => $request->promotion,
                     'promotion_price' => $request->promotion_price,
-                    'start_date' => $request->start_date != null ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null,
-                    'end_date' => $request->end_date != null ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null,
+                    'start_date' => $request->start_date != null ? Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d') : null,
+                    'end_date' => $request->start_date != null ? Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d') : null,
                     'desc' => $request->desc,
                 ]);
                 return response()->json([

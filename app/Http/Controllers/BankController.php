@@ -88,7 +88,7 @@ class BankController extends Controller
         $bank = Bank::find($id);
 
         $validator = Validator::make($request->all(), [
-            'bank' => "unique:bank,bank," . $bank->id,
+            'bank' => "required|unique:bank,bank," . $bank->id,
             'desc' => 'required',
         ], [
             'bank.required' => 'bank wajib diisi!',

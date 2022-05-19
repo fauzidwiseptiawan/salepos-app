@@ -255,7 +255,7 @@
                                                     data-target="#datestart" id="startDate" name="start_date"
                                                     @if ($item->start_date == '') value="{{ $item->start_date }}"
                                                             @else
-                                                                value="{{ date('m-d-Y', strtotime($item->start_date)) }}" @endif />
+                                                                value="{{ date('d/m/Y', strtotime($item->start_date)) }}" @endif />
                                                 <div class="input-group-append" data-target="#datestart"
                                                     data-toggle="datetimepicker">
                                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -272,7 +272,7 @@
                                                     data-target="#dateend" id="endDate" name="end_date"
                                                     @if ($item->end_date == '') value="{{ $item->end_date }}"
                                                             @else
-                                                                value="{{ date('m-d-Y', strtotime($item->end_date)) }}" @endif />
+                                                                value="{{ date('d/m/Y', strtotime($item->end_date)) }}" @endif />
                                                 <div class="input-group-append" data-target="#dateend"
                                                     data-toggle="datetimepicker">
                                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -334,10 +334,10 @@
     <script>
         //Date picker
         $('#datestart').datetimepicker({
-            format: 'DD/MM/YYYY'
+            format: 'DD/MM/YYYY',
         });
         $('#dateend').datetimepicker({
-            format: 'DD/MM/YYYY'
+            format: 'DD/MM/YYYY',
         });
 
         // jika promosi tidak diganti

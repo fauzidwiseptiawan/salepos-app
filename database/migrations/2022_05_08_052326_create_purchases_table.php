@@ -16,6 +16,8 @@ return new class extends Migration
         Schema::create('purchases', function (Blueprint $table) {
             $table->increments('id');
             $table->string('reference_no', 50)->nullable();
+            $table->integer('order_purchase_id')->nullable()->unsigned();
+            $table->foreign('order_purchase_id')->references('id')->on('order_purchases');
             $table->unsignedInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedInteger('warehouse_id')->nullable();

@@ -323,10 +323,10 @@
     <script>
         //Date picker
         $('#datestart').datetimepicker({
-            format: 'DD/MM/YYYY'
+            format: 'DD/MM/YYYY',
         });
         $('#dateend').datetimepicker({
-            format: 'DD/MM/YYYY'
+            format: 'DD/MM/YYYY',
         });
 
         // display form promosi
@@ -511,7 +511,6 @@
                 contentType: false,
                 data: fd,
                 success: function(responce) {
-                    console.log(responce);
                     if (responce.success == 200) {
                         Toast.fire({
                             icon: 'success',

@@ -15,12 +15,17 @@ return new class extends Migration
     {
         Schema::create('item_purchases', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('order_purchase_id')->nullable()->unsigned();
+            $table->foreign('order_purchase_id')->references('id')->on('order_purchases');
+            $table->integer('purchase_id')->nullable()->unsigned();
+            $table->foreign('purchase_id')->references('id')->on('purchases');
             $table->unsignedInteger('item_id')->nullable();
             $table->foreign('item_id')->references('id')->on('item');
             $table->unsignedInteger('item_batch_id')->nullable();
             $table->foreign('item_batch_id')->references('id')->on('item_batches');
             $table->string('qty', 25)->nullable();
             $table->string('recieved', 25)->nullable();
+            $table->string('price', 25)->nullable();
             $table->string('discount', 25)->nullable();
             $table->string('total', 25)->nullable();
             $table->timestamp('created_at')->useCurrent();
