@@ -115,7 +115,6 @@ class PurchaseOrderController extends Controller
             $item_purchase = [];
 
             foreach ($item_id as $i => $id) {
-                dd($total);
                 $item_data = Item::find($id);
                 if ($batch_no[$i]) {
                     $item_batch_data = ItemBatch::where([

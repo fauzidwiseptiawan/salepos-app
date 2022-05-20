@@ -415,7 +415,6 @@
         var item_code = [];
 
         var rowindex;
-        var purchase_price;
 
         // show search items
         $('#showItem').on('click', function(e) {
@@ -466,14 +465,12 @@
                 },
             });
         })
-
         // function select all
         $("#select_all").on('click', function() {
             var isChecked = $("#select_all").prop('checked')
             $(".select-form").prop('checked', isChecked)
         })
         // end function
-
         // function select one
         $(".order-list tbody").on('click', '.select-form', function() {
             if ($(this).prop('checked') != true) {
@@ -483,7 +480,6 @@
             let deleteSelected = (selectAll.length > 0)
         })
         // end function
-
         // select items
         let number = 1
         $(document).on('click', '#selectItem', function(e) {
@@ -509,7 +505,7 @@
                                 ') .qty').val(qty);
                             $('table.order-list tbody tr:nth-child(' + (rowindex + 1) +
                                 ') .recieved').val(qty);
-                            calculateRowProductData(qty, 0, responce.data.purchase_price);
+                            calculateRowitemData(qty, 0, responce.data.purchase_price);
                             flag = 0;
                         }
                     });
@@ -551,48 +547,50 @@
                             `<input type="hidden" class="item-code" name="item_code[]" value="${responce.data.item_code}"/>`;
                         cols +=
                             `<input type="hidden" class="item-id" name="item_id[]" value="${responce.data.id}"/>`;
-
                         newRow.append(cols)
-
                         $("table.order-list tbody").prepend(newRow);
-
                         rowindex = newRow.index();
-                        calculateRowProductData(1, 0, parseFloat(responce.data.purchase_price));
+                        calculateRowitemData(1, 0, responce.data.purchase_price);
                     }
                 }
             })
         })
-
         //Change quantity
         $("#myTable").on('input', '.qty', function() {
             rowindex = $(this).closest('tr').index();
+            var purchasePrice = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice')
+                .val();
+            var discount = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val();
             if ($(this).val() < 1 && $(this).val() != '') {
                 $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val(1);
                 alert("Quantity can't be less than 1");
             }
-            calculateRowProductData($(this).val(), $('.discount').val(), $('.purchasePrice').val(), true)
+            calculateRowitemData($(this).val(), discount, purchasePrice)
         });
 
         //Change discount
         $("#myTable").on('input', '.discount', function() {
             rowindex = $(this).closest('tr').index();
+            var purchasePrice = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice')
+                .val();
+            var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val();
             $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val();
-            calculateRowProductData($('.qty').val(), $(this).val(), $('.purchasePrice').val(), true)
+            calculateRowitemData(quantity, $(this).val(), purchasePrice, )
         });
 
-        //Change price
+        // Change price
         $("#myTable").on('input', '.purchasePrice', function() {
-            // console.log($(this).val())
             rowindex = $(this).closest('tr').index();
+            var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val();
+            var discount = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val()
             $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice').val();
-            calculateRowProductData($('.qty').val(), $('.discount').val(), $(this).val(), true)
+            calculateRowitemData(quantity, discount, $(this).val())
         });
 
         //Change order discount
         $('input[name="order_discount"]').on("input", function() {
             calculateGrandTotal();
         });
-
         // store purchase order
         $(document).on('click', '#savePurchaseOrder', function(e) {
             e.preventDefault();
@@ -613,7 +611,6 @@
                 var paymentStatus = $('input[name="payment_status"]').val();
                 var userId = $('input[name="user_id"]').val();
                 var rownumber = $('table.order-list tbody tr:last').index();
-
                 var fd = new FormData();
                 // looping row selected
                 $('input[name="item_id[]"]').each(function() {
@@ -640,7 +637,6 @@
                 $('input[name="subtotal[]"]').each(function() {
                     items.push(fd.append("subtotal[]", $(this).val()));
                 })
-
                 fd.append("reference_no", referenceNo);
                 fd.append("supplier_id", supplier);
                 fd.append("send_date", sendDate);
@@ -653,13 +649,11 @@
                 fd.append("purchase_status", purchaseStatus);
                 fd.append("payment_status", paymentStatus);
                 fd.append("user_id", userId);
-
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     }
                 });
-
                 $.ajax({
                     url: $('.add-purchase-order').attr('action'),
                     type: $('.add-purchase-order').attr('method'),
@@ -700,7 +694,6 @@
                 })
             }
         })
-
         // show purchase price
         $(document).on('click', '#showPurchasePirce', function() {
             let selected = $("#myTable tbody .select-form:checked")
@@ -737,27 +730,22 @@
                 alert('belum dipilih')
             }
         })
-
         // update purchase price
         $(document).on('click', '#updatePrice', function(e) {
             e.preventDefault();
             var id = $("#id").val();
             var sellingPrice = $("#selling").val();
             console.log(sellingPrice);
-
             var url = "{{ route('purchaseorderlist.updatePrice', ':id') }}";
             url = url.replace(':id', id);
-
             var fd = new FormData();
             fd.append("id", id);
             fd.append("selling_price", parseFloat(sellingPrice.replaceAll('.', '')));
-
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-
             $.ajax({
                 url: url,
                 type: $('.update-price').attr('method'),
@@ -783,8 +771,6 @@
                 }
             })
         })
-
-
         // remove row items
         $(document).on('click', '#deleteItem', function() {
             let selected = $("#myTable tbody .select-form:checked")
@@ -800,7 +786,6 @@
                 }
             })
         })
-
         // show search supplier
         $('.showSupplier').on('click', function(e) {
             e.preventDefault();
@@ -838,15 +823,12 @@
                 },
             });
         })
-
         // select supplier
         $(document).on('click', '#selectSupplier', function(e) {
             e.preventDefault();
-
             var id = $(this).attr("value");
             var url = "{{ route('purchaseorderlist.getSupplier', ':id') }}";
             url = url.replace(':id', id);
-
             $.ajax({
                 url: url,
                 type: "GET",
@@ -863,7 +845,7 @@
             })
         })
 
-        function calculateRowProductData(quantity, discount, price) {
+        function calculateRowitemData(quantity, discount, price) {
             var net_unit_cost = price - discount;
             var sub_total = net_unit_cost * quantity;
             $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ')').find('.sub-total').val(sub_total);
@@ -874,7 +856,6 @@
             //Sum of quantity
             var total_qty = 0;
             $(".qty").each(function() {
-
                 if ($(this).val() == '') {
                     total_qty += 0;
                 } else {
@@ -899,24 +880,18 @@
             });
             $("#subTotal").val(format_uang(subtotal));
             $('input[name="total_price"]').val(subtotal);
-
             calculateGrandTotal()
         }
 
         function calculateGrandTotal() {
-
             var item = $('table.order-list tbody tr:last').index();
-
             var total_qty = parseFloat($('#totalQty').val());
             var subtotal = parseFloat($('input[name="total_price"]').val());
             var order_discount = parseFloat($('input[name="order_discount"]').val());
-
             if (!order_discount)
                 order_discount = 0.00;
-
             item = ++item + '(' + total_qty + ')';
             var grand_total = subtotal - order_discount;
-
             $('#item').val(item);
             $('input[name="item"]').val($('table.order-list tbody tr:last').index() + 1);
             $('#subTotal').val(format_uang(subtotal));
