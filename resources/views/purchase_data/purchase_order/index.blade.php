@@ -45,12 +45,12 @@
                             </th>
                             <th>No Transaksi</th>
                             <th>Tanggal</th>
+                            <th>Tanggal Kirim</th>
                             <th>Dept/Gudang</th>
                             <th>Supplier</th>
-                            <th>Status Pembelian</th>
+                            <th>Jumlah Pesan</th>
+                            <th>Jumlah Terima</th>
                             <th>Total</th>
-                            <th>Jatuh Tempo</th>
-                            <th>Status Pembayaran</th>
                             <th class="not-exported" width="10%">Aksi</th>
                         </tr>
                     </thead>
@@ -161,7 +161,10 @@
                         data: 'reference_no'
                     },
                     {
-                        data: 'create_at'
+                        data: 'created_at'
+                    },
+                    {
+                        data: 'send_date'
                     },
                     {
                         data: 'warehouse'
@@ -170,13 +173,13 @@
                         data: 'supplier'
                     },
                     {
-                        data: 'purchase_status'
+                        data: 'total_qty'
+                    },
+                    {
+                        data: 'total_recieved'
                     },
                     {
                         data: 'grand_total'
-                    },
-                    {
-                        data: 'payment_status'
                     },
                     {
                         data: 'action',

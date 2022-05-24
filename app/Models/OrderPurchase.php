@@ -19,12 +19,15 @@ class OrderPurchase extends Model
         'user_id',
         'warehouse_id',
         'supplier_id',
-        'item',
+        'total_item',
         'total_qty',
+        'total_recieved',
         'total_discount',
+        'total_price',
+        'order_discount',
         'grand_total',
         'purchase_status',
-        // 'payment_status',
+        'payment_status',
         'send_date',
         'desc',
     ];
@@ -36,6 +39,6 @@ class OrderPurchase extends Model
 
     public function warehouse()
     {
-        return $this->belongsTo(Supplier::class, 'warehouse_id');
+        return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
 }

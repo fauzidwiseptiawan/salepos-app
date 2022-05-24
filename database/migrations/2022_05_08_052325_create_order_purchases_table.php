@@ -22,11 +22,15 @@ return new class extends Migration
             $table->foreign('warehouse_id')->references('id')->on('warehouse');
             $table->unsignedInteger('supplier_id')->nullable();
             $table->foreign('supplier_id')->references('id')->on('supplier');
-            $table->string('item', 25)->nullable();
+            $table->string('total_item', 25)->nullable();
             $table->string('total_qty', 25)->nullable();
+            $table->string('total_recieved', 25)->nullable();
             $table->string('total_discount', 25)->nullable();
+            $table->string('total_price', 25)->nullable();
+            $table->string('order_discount', 25)->nullable();
             $table->string('grand_total', 25)->nullable();
             $table->string('purchase_status', 10)->nullable();
+            $table->string('payment_status', 10)->nullable();
             $table->date('send_date')->nullable();
             $table->text('desc')->nullable();
             $table->timestamp('created_at')->useCurrent();

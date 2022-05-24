@@ -11,6 +11,7 @@ use App\Models\Supplier;
 use App\Models\Warehouse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class PurchaseOrderController extends Controller
@@ -31,11 +32,26 @@ class PurchaseOrderController extends Controller
             ->addColumn('select_all', function ($purchase) {
                 return '<input class="checkmark select-form" type="checkbox" value="' . $purchase->id . '">';
             })
-            ->addColumn('supplier', function ($item) {
-                return $item->supplier->supplier_name;
+            ->addColumn('created_at', function ($purchase) {
+                return date('d/m/Y', strtotime($purchase->created_at));
             })
-            ->addColumn('warehouse', function ($item) {
-                return $item->warehouse->name;
+            ->addColumn('send_date', function ($purchase) {
+                return date('d/m/Y', strtotime($purchase->send_date));
+            })
+            ->addColumn('warehouse', function ($purchase) {
+                return $purchase->warehouse->name;
+            })
+            ->addColumn('supplier', function ($purchase) {
+                return $purchase->supplier->supplier_name;
+            })
+            ->addColumn('total_qty', function ($purchase) {
+                return format_uang($purchase->total_qty);
+            })
+            ->addColumn('total_revieved', function ($purchase) {
+                return format_uang($purchase->total_revieved);
+            })
+            ->addColumn('grand_total', function ($purchase) {
+                return format_uang($purchase->grand_total);
             })
             ->addColumn('action', function ($purchase) {
                 return '<div class="dropdown">
@@ -73,6 +89,8 @@ class PurchaseOrderController extends Controller
     // store purchase order
     public function store(Request $request)
     {
+        $user_id = Auth::user()->id;
+
         $validator = Validator::make($request->all(), [
             'supplier_id' => 'required',
             'warehouse_id' => 'required',
@@ -90,15 +108,18 @@ class PurchaseOrderController extends Controller
         } else {
             OrderPurchase::insert([
                 'reference_no' => $request->reference_no,
-                'user_id' => $request->user_id,
+                'user_id' =>  $user_id,
                 'warehouse_id' => $request->warehouse_id,
                 'supplier_id' => $request->supplier_id,
-                'item' => $request->item,
+                'total_item' => $request->total_item,
                 'total_qty' => $request->total_qty,
+                'total_recieved' => $request->total_recieved,
                 'total_discount' => $request->total_discount,
+                'total_price' => $request->total_price,
+                'order_discount' => $request->order_discount,
                 'grand_total' => $request->grand_total,
                 'purchase_status' => $request->purchase_status,
-                // 'payment_status' => $request->payment_status,
+                'payment_status' => $request->payment_status,
                 'send_date' => $request->send_date != null ? Carbon::createFromFormat('d/m/Y', $request->send_date)->format('Y-m-d') : null,
                 'desc' => $request->desc,
             ]);
@@ -123,14 +144,12 @@ class PurchaseOrderController extends Controller
                     ])->first();
                     if ($item_batch_data) {
                         $item_batch_data->expired_date = Carbon::createFromFormat('d/m/Y', $expired_date[$i])->format('Y-m-d');
-                        $item_batch_data->qty += $qty[$i];
                         $item_batch_data->save();
                     } else {
                         $item_batch_data = ItemBatch::create([
                             'item_id' => $item_data->id,
                             'batch_no' => $batch_no[$i],
                             'expired_date' => Carbon::createFromFormat('d/m/Y', $expired_date[$i])->format('Y-m-d'),
-                            'qty' => $qty[$i],
                         ]);
                     }
                     $item_purchase['item_batch_id'] = $item_batch_data->id;
@@ -154,7 +173,6 @@ class PurchaseOrderController extends Controller
                 $item_warehouse_data->item_id = $id;
                 $item_warehouse_data->item_batch_id = $item_purchase['item_batch_id'];
                 $item_warehouse_data->warehouse_id = $request->warehouse_id;
-                $item_warehouse_data->qty = $qty[$i];
                 $item_warehouse_data->save();
 
                 // save order purchase
@@ -170,6 +188,152 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => 200,
                 'message' => 'Tambah pesanan pembelian baru berhasil',
+            ]);
+        }
+    }
+
+    public function show($id)
+    {
+        // fetch data id from database
+        $supplier = Supplier::orderBy('supplier_name', 'ASC')->get();
+        $warehouse = Warehouse::orderBy('name', 'ASC')->get();
+        $order_purchase = OrderPurchase::find($id);
+        $item_purchases = ItemPurchase::where('order_purchase_id', $id)->with(['item', 'batch'])->get();
+        foreach ($item_purchases as $item_purchase) {
+            $item_purchase->item->unit;
+        }
+        return view('purchase_data.purchase_order.update', compact('supplier', 'warehouse', 'order_purchase', 'item_purchases'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $order_purchase_data = OrderPurchase::find($id);
+        $item_purchase_data = ItemPurchase::where('order_purchase_id', $id)->get();
+        $user_id = Auth::user()->id;
+
+        $validator = Validator::make($request->all(), [
+            'supplier_id' => 'required',
+            'warehouse_id' => 'required',
+            'purchase_status' => 'required'
+        ], [
+            'supplier_id.required' => 'Supplier wajib diisi!',
+            'warehouse_id.required' => 'Gudang wajib diisi!',
+            'purchase_status.required' => 'Status pesanan wajib diisi!'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => 400,
+                'message' => $validator->errors()->toArray()
+            ]);
+        } else {
+
+            $item_id = $request->item_id;
+            $qty = $request->qty;
+            $recieved = $request->recieved;
+            $expired_date = $request->expired_date;
+            $batch_no = $request->batch_no;
+            $discount = $request->discount;
+            $purchase_price = $request->purchase_price;
+            $total = $request->subtotal;
+            $item_purchase = [];
+
+            foreach ($item_purchase_data as $item_purchase_list) {
+                $item_data = Item::find($item_purchase_list->item_id);
+                if ($item_purchase_list->item_batch_id) {
+                    $item_batch_data = ItemBatch::find($item_purchase_list->item_batch_id);
+                    $item_batch_data->save();
+
+                    $item_warehouse = ItemWarehouse::where([
+                        ['item_id', $item_purchase_list->item_id],
+                        ['item_batch_id', $item_purchase_list->item_batch_id],
+                        ['warehouse_id', $order_purchase_data->warehouse_id],
+                    ])->first();
+                } else {
+                    $item_warehouse = ItemWarehouse::where([
+                        ['item_id', $item_purchase_list->item_id],
+                        ['warehouse_id', $order_purchase_data->warehouse_id],
+                    ])->first();
+                }
+                $item_warehouse->save();
+                $item_purchase_list->delete();
+            }
+
+            foreach ($item_id as $key => $itm_id) {
+                $item_data = Item::find($itm_id);
+                if ($batch_no[$key]) {
+                    $item_batch_data = ItemBatch::where([
+                        ['item_id', $item_data->id],
+                        ['batch_no', $batch_no[$key]]
+                    ])->first();
+                    if ($item_batch_data) {
+                        $item_batch_data->expired_date = Carbon::createFromFormat('d/m/Y', $expired_date[$key])->format('Y-m-d');
+                        $item_batch_data->save();
+                    } else {
+                        $item_batch_data = ItemBatch::create([
+                            'item_id' => $item_data->id,
+                            'batch_no' => $batch_no[$key],
+                            'expired_date' => Carbon::createFromFormat('d/m/Y', $expired_date[$key])->format('Y-m-d'),
+                        ]);
+                    }
+                    $item_purchase['item_batch_id'] = $item_batch_data->id;
+                } else {
+                    $item_purchase['item_batch_id'] = null;
+                }
+                if ($item_purchase['item_batch_id']) {
+                    $item_warehouse_data = ItemWarehouse::where([
+                        ['item_id', $itm_id],
+                        ['item_batch_id', $item_purchase['item_batch_id']],
+                        ['warehouse_id', $request->warehouse_id],
+                    ])->first();
+                } else {
+                    $item_warehouse_data = ItemWarehouse::where([
+                        ['item_id', $itm_id],
+                        ['warehouse_id', $request->warehouse_id],
+                    ])->first();
+                }
+                //save to warehouse
+                if ($item_warehouse_data) {
+                    $item_warehouse_data->save();
+                } else {
+                    $item_warehouse_data = new ItemWarehouse();
+                    $item_warehouse_data->item_id = $itm_id;
+                    $item_warehouse_data->item_batch_id = $item_purchase['item_batch_id'];
+                    $item_warehouse_data->warehouse_id = $request->warehouse_id;
+                }
+                $item_warehouse_data->save();
+
+                // save order purchase
+                $item_purchase['order_purchase_id'] = $id;
+                $item_purchase['item_id'] = $itm_id;
+                $item_purchase['qty'] = $qty[$key];
+                $item_purchase['recieved'] = $recieved[$key];
+                $item_purchase['price'] = $purchase_price[$key];
+                $item_purchase['discount'] = $discount[$key];
+                $item_purchase['total'] = $total[$key];
+                ItemPurchase::insert($item_purchase);
+            }
+
+            $order_purchase_data->update([
+                'reference_no' => $request->reference_no,
+                'user_id' =>  $user_id,
+                'warehouse_id' => $request->warehouse_id,
+                'supplier_id' => $request->supplier_id,
+                'total_item' => $request->total_item,
+                'total_qty' => $request->total_qty,
+                'total_recieved' => $request->total_recieved,
+                'total_discount' => $request->total_discount,
+                'total_price' => $request->total_price,
+                'order_discount' => $request->order_discount,
+                'grand_total' => $request->grand_total,
+                'purchase_status' => $request->purchase_status,
+                'payment_status' => $request->payment_status,
+                'send_date' => $request->send_date != null ? Carbon::createFromFormat('d/m/Y', $request->send_date)->format('Y-m-d') : null,
+                'desc' => $request->desc,
+            ]);
+
+            return response()->json([
+                'success' => 200,
+                'message' => 'Edit pesanan pembelian baru berhasil',
             ]);
         }
     }

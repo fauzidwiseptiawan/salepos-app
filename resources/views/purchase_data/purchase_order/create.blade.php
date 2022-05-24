@@ -28,7 +28,6 @@
                         <div class="card-body">
                             {{-- form pertama --}}
                             <div class="col-md-12">
-                                <input type="hidden" name="user_id" value="{{ Auth::user()->id }}" />
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
@@ -129,6 +128,11 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
+                                        <input type="hidden" name="total_recieved" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
                                         <input type="hidden" name="total_discount" />
                                     </div>
                                 </div>
@@ -202,7 +206,7 @@
                                     <div class="col-md-2">
                                         <div class="form-group">
                                             <label for="recived">Terima</label>
-                                            <input type="text" class="form-control text-right" id="recived"
+                                            <input type="text" class="form-control text-right" id="totalRecieved"
                                                 placeholder="0.00" readonly>
                                         </div>
                                     </div>
@@ -395,6 +399,20 @@
     <script>
         // function
         $('.sidebar-mini').addClass('sidebar-collapse');
+        // show sweetalert
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+
+        // function pageRedirect
+        function pageRedirect() {
+            window.location = "{{ route('purchaseorderlist.index') }}";
+        }
+
+        // format date
         $('body').on('focus', ".datetimes", function() {
             $(this).datepicker({
                 format: "dd/mm/yyyy",
@@ -405,16 +423,19 @@
         $('#senddate').datetimepicker({
             format: 'DD/MM/YYYY',
         });
+
+        // format select option
         $('.select2bs4').select2({
             theme: 'bootstrap4',
             placeholder: "Select...",
             allowClear: false
         })
 
+        // temporary array
         var purchase_price = [];
         var item_code = [];
-
         var rowindex;
+        let number = 1
 
         // show search items
         $('#showItem').on('click', function(e) {
@@ -465,12 +486,13 @@
                 },
             });
         })
+
         // function select all
         $("#select_all").on('click', function() {
             var isChecked = $("#select_all").prop('checked')
             $(".select-form").prop('checked', isChecked)
         })
-        // end function
+
         // function select one
         $(".order-list tbody").on('click', '.select-form', function() {
             if ($(this).prop('checked') != true) {
@@ -479,9 +501,8 @@
             let selectAll = $(".order-list tbody .select-form:checked")
             let deleteSelected = (selectAll.length > 0)
         })
-        // end function
+
         // select items
-        let number = 1
         $(document).on('click', '#selectItem', function(e) {
             var id = $(this).attr("value");
             var url = "{{ route('purchaseorderlist.getItem', ':id') }}";
@@ -526,7 +547,7 @@
                             `<input type="number" class="form-control form-control-sm recieved" value="0" name="recieved[]" readonly>` +
                             `</td>`;
                         cols += `<td>` +
-                            `<input type="text" class="form-control form-control-sm" value="${responce.data.unit.unit}">` +
+                            `<input type="text" class="form-control form-control-sm" value="${responce.data.unit.unit}"readonly>` +
                             `</td>`;
                         cols += `<td>` +
                             `<input type="number" class="form-control form-control-sm discount" value="0" name="discount[]">` +
@@ -555,6 +576,7 @@
                 }
             })
         })
+
         //Change quantity
         $("#myTable").on('input', '.qty', function() {
             rowindex = $(this).closest('tr').index();
@@ -574,8 +596,15 @@
             var purchasePrice = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice')
                 .val();
             var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val();
-            $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val();
-            calculateRowitemData(quantity, $(this).val(), purchasePrice, )
+            if (parseFloat($(this).val()) > parseFloat(purchasePrice)) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Oppss..!',
+                    text: 'Diskon lebih besar dari harga pokok!'
+                });
+                $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val(0);
+            }
+            calculateRowitemData(quantity, $(this).val(), purchasePrice)
         });
 
         // Change price
@@ -583,7 +612,6 @@
             rowindex = $(this).closest('tr').index();
             var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val();
             var discount = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val()
-            $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice').val();
             calculateRowitemData(quantity, discount, $(this).val())
         });
 
@@ -591,69 +619,80 @@
         $('input[name="order_discount"]').on("input", function() {
             calculateGrandTotal();
         });
+
         // store purchase order
         $(document).on('click', '#savePurchaseOrder', function(e) {
             e.preventDefault();
+
+            var items = [];
+            var referenceNo = $('#ReferenceNo').val();
+            var grandTotal = $('input[name="grand_total"]').val();
+            var totalDiscount = $('input[name="total_discount"]').val();
+            var totalQty = $('input[name="total_qty"]').val();
+            var totalRecieved = $('input[name="total_recieved"]').val();
+            var totalItem = $('input[name="item"]').val();
+            var orderDiscount = $('#orderDiscount').val();
+            var supplier = $('#supplierId').val();
+            var sendDate = $('#sendDate').val();
+            var totalPrice = $('#subTotal').val();
+            var warehouse = $('#warehouseId').val();
+            var purchaseStatus = $('#purchaseStatus').val();
+            var paymentStatus = $('input[name="payment_status"]').val();
+            var desc = $('#desc').val();
+            var rownumber = $('table.order-list tbody tr:last').index();
+            var fd = new FormData();
+            // looping row selected
+            $('input[name="item_id[]"]').each(function() {
+                items.push(fd.append("item_id[]", $(this).val()));
+            })
+            $('input[name="qty[]"]').each(function() {
+                items.push(fd.append("qty[]", $(this).val()));
+            })
+            $('input[name="discount[]"]').each(function() {
+                items.push(fd.append("discount[]", $(this).val()));
+            })
+            $('input[name="expired_date[]"]').each(function() {
+                items.push(fd.append("expired_date[]", $(this).val()));
+            })
+            $('input[name="batch_no[]"]').each(function() {
+                items.push(fd.append("batch_no[]", $(this).val()));
+            })
+            $('input[name="recieved[]"]').each(function() {
+                items.push(fd.append("recieved[]", $(this).val()));
+            })
+            $('input[name="purchase_price[]"]').each(function() {
+                items.push(fd.append("purchase_price[]", $(this).val()));
+            })
+            $('input[name="subtotal[]"]').each(function() {
+                items.push(fd.append("subtotal[]", $(this).val()));
+            })
+            fd.append("reference_no", referenceNo);
+            fd.append("supplier_id", supplier);
+            fd.append("send_date", sendDate);
+            fd.append("warehouse_id", warehouse);
+            fd.append("order_discount", orderDiscount);
+            fd.append("grand_total", grandTotal);
+            fd.append("total_discount", totalDiscount);
+            fd.append("total_qty", totalQty);
+            fd.append("total_price", parseFloat(totalPrice.replaceAll('.', '')));
+            fd.append("total_recieved", totalRecieved);
+            fd.append("total_item", totalItem);
+            fd.append("purchase_status", purchaseStatus);
+            fd.append("payment_status", paymentStatus);
+            fd.append("desc", desc);
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
             if (rownumber < 0) {
-                alert("Maaf Item belum diinput!")
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Opps..!',
+                    text: 'Maaf Item belum diinput!'
+                });
                 e.preventDefault();
             } else {
-                var items = [];
-                var referenceNo = $('#ReferenceNo').val();
-                var grandTotal = $('input[name="grand_total"]').val();
-                var totalDiscount = $('input[name="total_discount"]').val();
-                var totalQty = $('input[name="total_qty"]').val();
-                var totalItem = $('input[name="item"]').val();
-                var supplier = $('#supplierId').val();
-                var sendDate = $('#sendDate').val();
-                var warehouse = $('#warehouseId').val();
-                var purchaseStatus = $('#purchaseStatus').val();
-                var paymentStatus = $('input[name="payment_status"]').val();
-                var userId = $('input[name="user_id"]').val();
-                var rownumber = $('table.order-list tbody tr:last').index();
-                var fd = new FormData();
-                // looping row selected
-                $('input[name="item_id[]"]').each(function() {
-                    items.push(fd.append("item_id[]", $(this).val()));
-                })
-                $('input[name="qty[]"]').each(function() {
-                    items.push(fd.append("qty[]", $(this).val()));
-                })
-                $('input[name="discount[]"]').each(function() {
-                    items.push(fd.append("discount[]", $(this).val()));
-                })
-                $('input[name="expired_date[]"]').each(function() {
-                    items.push(fd.append("expired_date[]", $(this).val()));
-                })
-                $('input[name="batch_no[]"]').each(function() {
-                    items.push(fd.append("batch_no[]", $(this).val()));
-                })
-                $('input[name="recieved[]"]').each(function() {
-                    items.push(fd.append("recieved[]", $(this).val()));
-                })
-                $('input[name="purchase_price[]"]').each(function() {
-                    items.push(fd.append("purchase_price[]", $(this).val()));
-                })
-                $('input[name="subtotal[]"]').each(function() {
-                    items.push(fd.append("subtotal[]", $(this).val()));
-                })
-                fd.append("reference_no", referenceNo);
-                fd.append("supplier_id", supplier);
-                fd.append("send_date", sendDate);
-                fd.append("warehouse_id", warehouse);
-                fd.append("send_date", sendDate);
-                fd.append("grand_total", grandTotal);
-                fd.append("total_discount", totalDiscount);
-                fd.append("total_qty", totalQty);
-                fd.append("item", totalItem);
-                fd.append("purchase_status", purchaseStatus);
-                fd.append("payment_status", paymentStatus);
-                fd.append("user_id", userId);
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
                 $.ajax({
                     url: $('.add-purchase-order').attr('action'),
                     type: $('.add-purchase-order').attr('method'),
@@ -663,7 +702,12 @@
                     data: fd,
                     success: function(responce) {
                         if (responce.success == 200) {
-                            alert(responce.message)
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Yeay..!',
+                                text: responce.message
+                            });
+                            setTimeout('pageRedirect()', 2000);
                         } else {
                             if (responce.message.supplier_id) {
                                 $('#supplierName').addClass('is-invalid');
@@ -694,6 +738,7 @@
                 })
             }
         })
+
         // show purchase price
         $(document).on('click', '#showPurchasePirce', function() {
             let selected = $("#myTable tbody .select-form:checked")
@@ -730,6 +775,7 @@
                 alert('belum dipilih')
             }
         })
+
         // update purchase price
         $(document).on('click', '#updatePrice', function(e) {
             e.preventDefault();
@@ -771,6 +817,7 @@
                 }
             })
         })
+
         // remove row items
         $(document).on('click', '#deleteItem', function() {
             let selected = $("#myTable tbody .select-form:checked")
@@ -786,6 +833,7 @@
                 }
             })
         })
+
         // show search supplier
         $('.showSupplier').on('click', function(e) {
             e.preventDefault();
@@ -823,6 +871,7 @@
                 },
             });
         })
+
         // select supplier
         $(document).on('click', '#selectSupplier', function(e) {
             e.preventDefault();
@@ -845,6 +894,7 @@
             })
         })
 
+        // calculation row item
         function calculateRowitemData(quantity, discount, price) {
             var net_unit_cost = price - discount;
             var sub_total = net_unit_cost * quantity;
@@ -852,6 +902,7 @@
             calculateTotal();
         }
 
+        // calculate total
         function calculateTotal() {
             //Sum of quantity
             var total_qty = 0;
@@ -864,6 +915,18 @@
             });
             $("#totalQty").val(total_qty.toFixed(2));
             $('input[name="total_qty"]').val(total_qty);
+
+            //Sum of revieved
+            var total_recieved = 0;
+            $(".recieved").each(function() {
+                if ($(this).val() == '') {
+                    total_recieved += 0;
+                } else {
+                    total_recieved += parseFloat($(this).val());
+                }
+            });
+            $("#totalRecieved").val(total_recieved.toFixed(2));
+            $('input[name="total_recieved"]').val(total_recieved);
 
             //Sum of discount
             var total_discount = 0;
@@ -883,6 +946,7 @@
             calculateGrandTotal()
         }
 
+        // calculate grand total
         function calculateGrandTotal() {
             var item = $('table.order-list tbody tr:last').index();
             var total_qty = parseFloat($('#totalQty').val());

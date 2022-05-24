@@ -115,7 +115,6 @@ class ItemController extends Controller
     public function details($id)
     {
         $items = Item::where('id', $id)->with(['brand', 'supplier', 'unit', 'type', 'subtype'])->first();
-
         return response()->json([
             'success' => 200,
             'message' => 'Berhasil mengambil data item!',
@@ -267,7 +266,6 @@ class ItemController extends Controller
         // fetch data id from database
         $item = Item::find($id);
         // input validation
-        // input validation
         if ($request->promotion != 0) {
             $validator = Validator::make($request->all(), [
                 'item_code' => 'required|unique:item,item_code,' . $item->id,
@@ -393,7 +391,6 @@ class ItemController extends Controller
             }
         }
     }
-
 
     public function importitem(Request $request)
     {

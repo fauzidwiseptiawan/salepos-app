@@ -25,4 +25,14 @@ class ItemPurchase extends Model
         'price',
         'total',
     ];
+
+    public function item()
+    {
+        return $this->belongsTo(Item::class, 'item_id');
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(ItemBatch::class, 'item_batch_id');
+    }
 }
