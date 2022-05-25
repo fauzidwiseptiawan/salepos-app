@@ -24,7 +24,7 @@ class PurchaseOrderController extends Controller
     public function fetch()
     {
         // fetch purchase
-        $purchase = orderPurchase::orderBy('created_at', 'DESC')->get();
+        $purchase = orderPurchase::orderBy('created_at', 'ASC')->get();
         // display result datatable
         return datatables()
             ->of($purchase)
@@ -60,7 +60,6 @@ class PurchaseOrderController extends Controller
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 <a class="dropdown-item" href="' . route('purchaseorderlist.show', $purchase->id) . '"><i class="fas fa-edit"></i> Edit</a>
-                                <a class="dropdown-item" href="' . route('purchaseorderlist.details', $purchase->id) . '"><i class="fas fa-eye"></i> Detail</a>
                                 <a class="dropdown-item" id="delete" href="' . route('purchaseorderlist.destroy', $purchase->id) . '" value="' . $purchase->id . '"><i class="fas fa-trash"></i> Hapus</a>
                             </div>
                         </div>';
@@ -129,12 +128,53 @@ class PurchaseOrderController extends Controller
             $item_id = $request->item_id;
             $qty = $request->qty;
             $recieved = $request->recieved;
+            $expired_date = $request->expired_date;
+            $batch_no = $request->batch_no;
             $discount = $request->discount;
             $purchase_price = $request->purchase_price;
             $total = $request->subtotal;
             $item_purchase = [];
 
             foreach ($item_id as $i => $id) {
+                $item_data = Item::find($id);
+                if ($batch_no[$i]) {
+                    $item_batch_data = ItemBatch::where([
+                        ['item_id', $item_data->id],
+                        ['batch_no', $batch_no[$i]]
+                    ])->first();
+                    if ($item_batch_data) {
+                        $item_batch_data->expired_date = Carbon::createFromFormat('d/m/Y', $expired_date[$i])->format('Y-m-d');
+                        $item_batch_data->save();
+                    } else {
+                        $item_batch_data = ItemBatch::create([
+                            'item_id' => $item_data->id,
+                            'batch_no' => $batch_no[$i],
+                            'expired_date' => Carbon::createFromFormat('d/m/Y', $expired_date[$i])->format('Y-m-d'),
+                        ]);
+                    }
+                    $item_purchase['item_batch_id'] = $item_batch_data->id;
+                } else {
+                    $item_purchase['item_batch_id'] = null;
+                }
+                if ($item_purchase['item_batch_id']) {
+                    $item_warehouse_data = ItemWarehouse::where([
+                        ['item_id', $id],
+                        ['item_batch_id', $item_purchase['item_batch_id']],
+                        ['warehouse_id', $request->warehouse_id],
+                    ])->first();
+                } else {
+                    $item_warehouse_data = ItemWarehouse::where([
+                        ['item_id', $id],
+                        ['warehouse_id', $request->warehouse_id],
+                    ])->first();
+                }
+                //save to warehouse
+                $item_warehouse_data = new ItemWarehouse();
+                $item_warehouse_data->item_id = $id;
+                $item_warehouse_data->item_batch_id = $item_purchase['item_batch_id'];
+                $item_warehouse_data->warehouse_id = $request->warehouse_id;
+                $item_warehouse_data->save();
+
                 // save order purchase
                 $item_purchase['order_purchase_id'] = $order_purchase_data->id;
                 $item_purchase['item_id'] = $id;
@@ -190,16 +230,78 @@ class PurchaseOrderController extends Controller
             $item_id = $request->item_id;
             $qty = $request->qty;
             $recieved = $request->recieved;
+            $expired_date = $request->expired_date;
+            $batch_no = $request->batch_no;
             $discount = $request->discount;
             $purchase_price = $request->purchase_price;
             $total = $request->subtotal;
             $item_purchase = [];
 
             foreach ($item_purchase_data as $item_purchase_list) {
+                $item_data = Item::find($item_purchase_list->item_id);
+                if ($item_purchase_list->item_batch_id) {
+                    $item_batch_data = ItemBatch::find($item_purchase_list->item_batch_id);
+                    $item_batch_data->save();
+
+                    $item_warehouse = ItemWarehouse::where([
+                        ['item_id', $item_purchase_list->item_id],
+                        ['item_batch_id', $item_purchase_list->item_batch_id],
+                        ['warehouse_id', $order_purchase_data->warehouse_id],
+                    ])->first();
+                } else {
+                    $item_warehouse = ItemWarehouse::where([
+                        ['item_id', $item_purchase_list->item_id],
+                        ['warehouse_id', $order_purchase_data->warehouse_id],
+                    ])->first();
+                }
+                $item_warehouse->save();
                 $item_purchase_list->delete();
             }
 
             foreach ($item_id as $key => $itm_id) {
+                $item_data = Item::find($itm_id);
+                if ($batch_no[$key]) {
+                    $item_batch_data = ItemBatch::where([
+                        ['item_id', $item_data->id],
+                        ['batch_no', $batch_no[$key]]
+                    ])->first();
+                    if ($item_batch_data) {
+                        $item_batch_data->expired_date = Carbon::createFromFormat('d/m/Y', $expired_date[$key])->format('Y-m-d');
+                        $item_batch_data->save();
+                    } else {
+                        $item_batch_data = ItemBatch::create([
+                            'item_id' => $item_data->id,
+                            'batch_no' => $batch_no[$key],
+                            'expired_date' => Carbon::createFromFormat('d/m/Y', $expired_date[$key])->format('Y-m-d'),
+                        ]);
+                    }
+                    $item_purchase['item_batch_id'] = $item_batch_data->id;
+                } else {
+                    $item_purchase['item_batch_id'] = null;
+                }
+                if ($item_purchase['item_batch_id']) {
+                    $item_warehouse_data = ItemWarehouse::where([
+                        ['item_id', $itm_id],
+                        ['item_batch_id', $item_purchase['item_batch_id']],
+                        ['warehouse_id', $request->warehouse_id],
+                    ])->first();
+                } else {
+                    $item_warehouse_data = ItemWarehouse::where([
+                        ['item_id', $itm_id],
+                        ['warehouse_id', $request->warehouse_id],
+                    ])->first();
+                }
+                //save to warehouse
+                if ($item_warehouse_data) {
+                    $item_warehouse_data->save();
+                } else {
+                    $item_warehouse_data = new ItemWarehouse();
+                    $item_warehouse_data->item_id = $itm_id;
+                    $item_warehouse_data->item_batch_id = $item_purchase['item_batch_id'];
+                    $item_warehouse_data->warehouse_id = $request->warehouse_id;
+                }
+                $item_warehouse_data->save();
+
                 // save order purchase
                 $item_purchase['order_purchase_id'] = $id;
                 $item_purchase['item_id'] = $itm_id;
@@ -249,26 +351,6 @@ class PurchaseOrderController extends Controller
         ]);
     }
 
-    public function details($id)
-    {
-        $order_purchase = OrderPurchase::find($id);
-        $item_purchases = ItemPurchase::where('order_purchase_id', $id)->with(['item', 'batch'])->get();
-        foreach ($item_purchases as $item_purchase) {
-            $item_purchase->item->unit;
-        }
-        return view('purchase_data.purchase_order.details', compact('order_purchase', 'item_purchases'));
-    }
-
-    public function print($id)
-    {
-        $order_purchase = OrderPurchase::find($id);
-        $item_purchases = ItemPurchase::where('order_purchase_id', $id)->with(['item', 'batch'])->get();
-        foreach ($item_purchases as $item_purchase) {
-            $item_purchase->item->unit;
-        }
-        return view('purchase_data.purchase_order.print_invoice', compact('order_purchase', 'item_purchases'));
-    }
-
     // data function update item selected
     public function updatePrice(Request $request, $id)
     {
@@ -294,38 +376,6 @@ class PurchaseOrderController extends Controller
                 'message' => 'Edit harga jual berhasil',
             ]);
         }
-    }
-
-    public function destroy($id)
-    {
-        $purchase_data = OrderPurchase::find($id);
-        $item_purchase_data = ItemPurchase::where('order_purchase_id', $id)->get();
-
-        foreach ($item_purchase_data as $item_purchase) {
-            $item_purchase->delete();
-        }
-        $purchase_data->delete();
-        return response()->json([
-            'success' => 200,
-            'message' => 'Hapus data pesanan pembelian berhasil',
-        ]);
-    }
-
-    // data function delete selected
-    public function destroySelected(Request $request)
-    {
-        foreach ($request->id as $id) {
-            $purchase_data = OrderPurchase::find($id);
-            $item_purchase_data = ItemPurchase::where('order_purchase_id', $id)->get();
-            foreach ($item_purchase_data as $item_purchase) {
-                $item_purchase->delete();
-            }
-            $purchase_data->delete();
-        }
-        return response()->json([
-            'success' => 200,
-            'message' => 'Hapus data item berhasil!',
-        ]);
     }
 
     // get item id

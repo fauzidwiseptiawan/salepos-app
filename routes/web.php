@@ -110,5 +110,7 @@ Route::group(['middleware' => ['auth', 'checklevels:Admin']], function () {
     Route::get('purchaseorderlist/getItem/{id}', [PurchaseOrderController::class, 'getItem'])->name('purchaseorderlist.getItem');
     Route::post('purchaseorderlist/import', [PurchaseOrderController::class, 'importPurchaseOrder'])->name('purchaseorderlist.import');
     Route::get('purchaseorderlist/exportPDF', [PurchaseOrderController::class, 'exportPDFimportPurchaseOrder'])->name('purchaseorderlist.exportPDF');
+    Route::get('purchaseorderlist/details/{id}', [PurchaseOrderController::class, 'details'])->name('purchaseorderlist.details');
+    Route::get('purchaseorderlist/print/{id}', [PurchaseOrderController::class, 'print'])->name('purchaseorderlist.print');
     Route::resource('purchaseorderlist', PurchaseOrderController::class);
 });

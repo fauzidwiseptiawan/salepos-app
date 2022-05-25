@@ -146,10 +146,9 @@
                                                     <td><input type="number" class="form-control form-control-sm sub-total"
                                                             value="{{ $ip->total }}" name="subtotal[]" readonly></td>
                                                     <td><input type="text" class="form-control form-control-sm batch-no"
-                                                            value="{{ $ip->batch->batch_no }}" name="batch_no[]"></td>
+                                                            value="" name="batch_no[]"></td>
                                                     <td><input type="text" class="form-control form-control-sm datetimes"
-                                                            name="expired_date[]"
-                                                            value="{{ date('d/m/Y', strtotime($ip->batch->expired_date)) }}" />
+                                                            name="expired_date[]" value="{{ date('d/m/Y') }}" />
                                                     </td>
                                                     <input type="hidden" class="item-id" name="item_id[]"
                                                         value="{{ $ip->item->id }}" />
@@ -195,7 +194,8 @@
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <input type="hidden" name="item" value="{{ $order_purchase->total_item }}" />
+                                        <input type="hidden" name="total_item"
+                                            value="{{ $order_purchase->total_item }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -668,6 +668,9 @@
             var purchasePrice = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice')
                 .val();
             var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val();
+            if ($(this).val() < 0 && $(this).val() != '') {
+                $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val(0);
+            }
             if (parseFloat($(this).val()) > parseFloat(purchasePrice)) {
                 Toast.fire({
                     icon: 'error',
@@ -702,7 +705,9 @@
             var referenceNo = $('#ReferenceNo').val();
             var grandTotal = $('input[name="grand_total"]').val();
             var totalDiscount = $('input[name="total_discount"]').val();
+            var orderDiscount = $('#orderDiscount').val();
             var totalQty = $('input[name="total_qty"]').val();
+            var totalPrice = $('input[name="total_price"]').val();
             var totalRecieved = $('input[name="total_recieved"]').val();
             var totalItem = $('input[name="total_item"]').val();
             var supplier = $('#supplierId').val();
@@ -745,10 +750,12 @@
             fd.append("warehouse_id", warehouse);
             fd.append("send_date", sendDate);
             fd.append("grand_total", grandTotal);
+            fd.append("total_price", totalPrice);
             fd.append("total_discount", totalDiscount);
+            fd.append("order_discount", orderDiscount);
             fd.append("total_qty", totalQty);
             fd.append("total_recieved", totalRecieved);
-            fd.append("item", totalItem);
+            fd.append("total_item", totalItem);
             fd.append("purchase_status", purchaseStatus);
             fd.append("payment_status", paymentStatus);
             $.ajaxSetup({
@@ -898,6 +905,9 @@
             $.each(selected, function(index, responce) {
                 id.push(responce.value)
                 if ($('.select-form:checked').length > 0) {
+                    rowindex = $(this).closest('tr').index();
+                    purchase_price.splice(rowindex, 1);
+                    item_discount.splice(rowindex, 1);
                     $(this).closest('tr').remove();
                     calculateTotal();
                 } else {
