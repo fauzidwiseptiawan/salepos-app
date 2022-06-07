@@ -67,7 +67,7 @@ class ItemController extends Controller
             })
             ->addColumn('supplier', function ($item) {
                 if ($item->supplier_id != null) {
-                    return $item->supplier->supplier_name;
+                    return $item->supplier->supplier_code;
                 } else {
                     return '-';
                 }

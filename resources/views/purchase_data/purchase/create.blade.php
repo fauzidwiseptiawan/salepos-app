@@ -1,12 +1,12 @@
 @extends('layouts.master')
-@section('title', 'Edit Pesanan Pembelian Baru')
+@section('title', 'Pesanan Pembelian Baru')
 @section('content')
     <!-- Content Header (Page header) -->
     <div class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">@yield('title') : {{ $order_purchase->reference_no }}</h1>
+                    <h1 class="m-0">@yield('title')</h1>
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -23,10 +23,8 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card card-default">
-                    <form method="POST" action="{{ route('purchaseorderlist.update', $order_purchase->id) }}"
+                    <form method="POST" action="{{ route('purchaselist.store') }}"
                         class="needs-validation add-purchase-order" enctype="multipart/form-data">
-                        <input type="hidden" name="_method" value="PUT">
-                        <input type="hidden" id="order_purchase_id" value="{{ $order_purchase->id }}">
                         <div class="card-body">
                             {{-- form pertama --}}
                             <div class="col-md-12">
@@ -35,7 +33,7 @@
                                         <div class="form-group">
                                             <label for="reference_no">No Transaksi</label>
                                             <input type="text" class="form-control" id="ReferenceNo" name="reference_no"
-                                                value="{{ $order_purchase->reference_no }}" readonly>
+                                                value="{{ $reference_no }}" readonly>
                                             <small id="errorRefenceNo" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -43,18 +41,16 @@
                                         <div class="form-group">
                                             <label for="date">Tanggal</label>
                                             <input type="text" class="form-control" id="date" name="date" readonly
-                                                value="{{ date('d/m/Y H:i:s', strtotime($order_purchase->created_at)) }}">
+                                                value="{{ date('d/m/Y H:i:s') }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="supplierId">Supplier</label>
+                                            <label for="desc">Supplier</label>
                                             <div class="input-group mb-3">
-                                                <input type="hidden" name="supplier_id" id="supplierId"
-                                                    value="{{ $order_purchase->supplier->id }}">
+                                                <input type="hidden" name="supplier_id" id="supplierId">
                                                 <input type="text" class="form-control showSupplier" id="supplierName"
-                                                    name="supplier_name"
-                                                    value="{{ $order_purchase->supplier->supplier_name }}">
+                                                    name="supplier_name" placeholder="Select...">
                                                 <div class="input-group-append showSupplier">
                                                     <span class="input-group-text"><i class="fas fa-search"></i></span>
                                                 </div>
@@ -70,10 +66,14 @@
                                             <select value="" id="warehouseId" class="form-control select2bs4"
                                                 name="warehouse_id" style="width: 100%;">
                                                 <option></option>
-                                                @foreach ($warehouse as $items)
-                                                    <option value="{{ $items->id }}"
-                                                        @if ($items->id == $order_purchase->warehouse_id) selected @endif>
-                                                        {{ $items->name }}</option>
+                                                @foreach ($warehouse as $item)
+                                                    @if (old('warehouse_id') == $item->id)
+                                                        <option value="{{ $item->id }}">{{ $item->name }}
+                                                        </option>
+                                                    @else
+                                                        <option value="{{ $item->id }}">{{ $item->name }}
+                                                        </option>
+                                                    @endif
                                                 @endforeach
                                             </select>
                                             <small id="errorWarehouseId" class="form-text text-muted"></small>
@@ -81,27 +81,16 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label>Status Pembelian</label>
-                                            <select value="" id="purchaseStatus" class="form-control select2bs4"
-                                                name="purchase_status" style="width: 100%;">
-                                                <option></option>
-                                                <option {{ $order_purchase->purchase_status == '1' ? 'selected' : '' }}
-                                                    value="1">
-                                                    Menunggu Pembayaran</option>
-                                                <option {{ $order_purchase->purchase_status == '2' ? 'selected' : '' }}
-                                                    value="2">
-                                                    Menunggu Persetujuan</option>
-                                                <option {{ $order_purchase->purchase_status == '3' ? 'selected' : '' }}
-                                                    value="3">
-                                                    Disetuji</option>
-                                                <option {{ $order_purchase->purchase_status == '4' ? 'selected' : '' }}
-                                                    value="4">
-                                                    Selesai</option>
-                                                <option {{ $order_purchase->purchase_status == '5' ? 'selected' : '' }}
-                                                    value="5">
-                                                    Dibatal kan</option>
-                                            </select>
-                                            <small id="errorPurchaseStatus" class="form-text text-muted"></small>
+                                            <label for="order">Pesanan</label>
+                                            <div class="input-group mb-3">
+                                                <input type="hidden" name="order_purchase_id" id="orderPurchaseId">
+                                                <input type="text" class="form-control showOrder" id="referenceNoOrder"
+                                                    name="reference_no" placeholder="Select...">
+                                                <div class="input-group-append showOrder">
+                                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                </div>
+                                            </div>
+                                            <small id="errorOrderPurchaseId" class="form-text text-muted"></small>
                                         </div>
                                     </div>
                                 </div>
@@ -114,10 +103,11 @@
                                             <tr>
                                                 <th width="3%"><input class="checkmark select-form" id="select_all"
                                                         type="checkbox"></th>
+                                                <th width="3%">No</th>
                                                 <th width="8%">Kode</th>
                                                 <th width="20%">Nama</th>
+                                                <th>Jml Pesan</th>
                                                 <th>Jumlah</th>
-                                                <th>Jml Terima</th>
                                                 <th width="5%">Satuan</th>
                                                 <th>Pot Rp</th>
                                                 <th>Harga Pokok</th>
@@ -126,45 +116,7 @@
                                                 <th>Tgl Exp</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            @foreach ($item_purchases as $ip)
-                                                <tr>
-                                                    <td><input class="checkmark select-form" type="checkbox"
-                                                            value="{{ $ip->item->id }}"></td>
-                                                    <td>{{ $ip->item->item_code }}</td>
-                                                    <td>{{ $ip->item->item_name }}</td>
-                                                    <td><input type="number" class="form-control form-control-sm qty"
-                                                            value="{{ $ip->qty }}" name="qty[]"></td>
-                                                    <td><input type="number" class="form-control form-control-sm recieved"
-                                                            value="{{ $ip->recieved }}" name="recieved[]" readonly></td>
-                                                    <td><input type="text" class="form-control form-control-sm"
-                                                            value="{{ $ip->item->unit->unit }}" readonly></td>
-                                                    <td><input type="number" class="form-control form-control-sm discount"
-                                                            value="{{ $ip->discount }}" name="discount[]"></td>
-                                                    <td><input type="number"
-                                                            class="form-control form-control-sm purchasePrice"
-                                                            value="{{ $ip->price }}" name="purchase_price[]"></td>
-                                                    <td><input type="number" class="form-control form-control-sm sub-total"
-                                                            value="{{ $ip->total }}" name="subtotal[]" readonly></td>
-                                                    <td><input type="text" class="form-control form-control-sm batch-no"
-                                                            value="" name="batch_no[]"></td>
-                                                    <td><input type="text" class="form-control form-control-sm datetimes"
-                                                            name="expired_date[]" value="{{ date('d/m/Y') }}" />
-                                                    </td>
-                                                    <input type="hidden" class="item-id" name="item_id[]"
-                                                        value="{{ $ip->item->id }}" />
-                                                    <input type="hidden" class="item-code" name="item_code[]"
-                                                        value="{{ $ip->item->item_code }}" />
-                                                    <input type="hidden" class="item-price" name="item_price[]"
-                                                        value="{{ $ip->price }}" />
-                                                    <input type="hidden" class="purchase-prices" name="pruchase_price[]"
-                                                        value="{{ $ip->item->purchase_price }}" />
-                                                    <input type="hidden" class="discount-value" name="discount[]"
-                                                        value="{{ $ip->discount }}" />
-                                                    <input type="hidden" class="subtotal-value" name="subtotal[]"
-                                                        value="{{ $ip->total }}" />
-                                                </tr>
-                                            @endforeach
+                                        <tbody id="listOrder">
                                         </tbody>
                                     </table>
                                 </div>
@@ -172,39 +124,35 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <input type="hidden" name="total_qty" value="{{ $order_purchase->total_qty }}" />
+                                        <input type="hidden" name="total_qty" />
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <input type="hidden" name="total_recieved"
-                                            value="{{ $order_purchase->total_recieved }}" />
+                                        <input type="hidden" name="total_recieved" />
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <input type="hidden" name="total_discount"
-                                            value="{{ $order_purchase->total_discount }}" />
+                                        <input type="hidden" name="total_discount" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <input type="hidden" name="total_price"
-                                            value="{{ $order_purchase->total_price }}" />
+                                        <input type="hidden" name="total_price" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <input type="hidden" name="total_item"
-                                            value="{{ $order_purchase->total_item }}" />
+                                        <input type="hidden" name="total_item" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <input type="hidden" name="grand_total"
-                                            value="{{ $order_purchase->grand_total }}" />
+                                        <input type="hidden" name="grand_total" />
                                         <input type="hidden" name="paid_amount" value="0.00" />
-                                        <input type="hidden" name="payment_status" value="1" />
+                                        <input type="hidden" name="purchase_status" value="4" />
+                                        <input type="hidden" name="payment_status" value="2" />
                                     </div>
                                 </div>
                             </div>
@@ -236,12 +184,12 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="date">Tanggal Kirim</label>
+                                            <label for="date">Jatuh Tempo</label>
                                             {{-- <input type="date" name="send_date" id="sendDate"> --}}
                                             <div class="input-group date" id="senddate" data-target-input="nearest">
                                                 <input type="text" class="form-control form-control-sm datetimepicker-input"
                                                     data-target="#senddate" id="sendDate" name="send_date"
-                                                    value="{{ date('d/m/Y', strtotime($order_purchase->send_date)) }}" />
+                                                    value="{{ date('d/m/Y', strtotime(' + 14 days')) }}" />
                                                 <div class="input-group-append" data-target="#senddate"
                                                     data-toggle="datetimepicker">
                                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -253,7 +201,7 @@
                                         <div class="form-group">
                                             <label for="totaQty">Item</label>
                                             <input type="text" class="form-control text-right" id="totalQty"
-                                                value="{{ format_uang($order_purchase->total_qty) }}" readonly>
+                                                placeholder="0.00" readonly>
                                             <small id="errorTotaQty" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -261,14 +209,14 @@
                                         <div class="form-group">
                                             <label for="recived">Terima</label>
                                             <input type="text" class="form-control text-right" id="totalRecieved"
-                                                value="{{ format_uang($order_purchase->total_recieved) }}" readonly>
+                                                placeholder="0.00" readonly>
                                         </div>
                                     </div>
                                     <div class="col-md-2">
                                         <div class="form-group">
                                             <label for="subTotal">Sub Total</label>
                                             <input type="text" class="form-control text-right" id="subTotal"
-                                                value="{{ format_uang($order_purchase->total_price) }}" readonly>
+                                                placeholder="0.00" readonly>
                                             <small id="errorsubTotal" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -276,7 +224,7 @@
                                         <div class="form-group">
                                             <label for="orderDiscount">Pot Rp</label>
                                             <input type="text" class="form-control  text-right" id="orderDiscount"
-                                                name="order_discount" value="{{ $order_purchase->order_discount }}">
+                                                name="order_discount" placeholder="0.00">
                                             <small id="errorOrderDiscount" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -285,8 +233,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="desc">Keterangan</label>
-                                            <input type="text" class="form-control" id="desc" name="desc"
-                                                value="{{ $order_purchase->desc }}">
+                                            <input type="text" class="form-control" id="desc" name="desc">
                                             <small id="errorDesc" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -295,8 +242,7 @@
                                             <label for="grandTotal">Total Akhir</label>
                                             <input type="text"
                                                 class="form-control bg-primary disabled color-palette text-right font-weight-bold"
-                                                style="font-size: 25px" id="grandTotal"
-                                                value="{{ format_uang($order_purchase->grand_total) }}" readonly>
+                                                style="font-size: 25px" id="grandTotal" value="0.00" readonly>
                                             <small id="errorGrandTotal" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -306,7 +252,11 @@
                             <div class="col-md-12">
                                 <div class="btn-group">
                                     <button type="submit" class="btn btn-info float-left btn-block"
-                                        id="updatePurchaseOrder">Simpan</button>
+                                        id="savePurchase">Simpan</button>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="submit" class="btn btn-warning float-left btn-block"
+                                        id="payment">Bayar</button>
                                 </div>
                             </div>
                         </div>
@@ -341,6 +291,45 @@
                                     <th>Telepon</th>
                                     <th>Alamat</th>
                                     <th width="5%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.modal -->
+
+    {{-- modals show order --}}
+    <div class="modal fade" id="modal-show-order" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Cari Pesanan....</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table id="table-order" class="table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>No Transaksi</th>
+                                    <th>Tanggal</th>
+                                    <th>Tanggal Kirim</th>
+                                    <th>Dept/Gudang</th>
+                                    <th>Nama</th>
+                                    <th>Jumlah Pesanan</th>
+                                    <th>Jumlah Terima</th>
+                                    <th>Total</th>
+                                    <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -409,7 +398,7 @@
                 </div>
                 <form method="POST" class="needs-validation update-price">
                     <input type="hidden" name="_method" value="PUT">
-                    <input type="hidden" id="id">
+                    <input type="text" id="id">
                     <div class="modal-body">
                         <div class="col-md-12">
                             <div class="col-md-12">
@@ -442,6 +431,56 @@
         </div>
     </div>
     <!-- /.modal -->
+
+    {{-- modals payment --}}
+    <div class="modal fade" id="modal-show-payment" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Pembayaran</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="POST" class="needs-validation payment">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <label for="paymentTotal" class="col-sm-2 col-form-label">Total</label>
+                            <div class="col-sm-10">
+                                <input type="number" name="payment_total" class="form-control" id="paymentTotal">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="payCash" class="col-sm-2 col-form-label">Bayar Tunai</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" name="pay_cash" id="payCash">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="paymentTotalCash" class="col-sm-2 col-form-label">Total</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" name="payment_total_cash" id="paymentTotalCash"
+                                    readonly>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="remainder" class="col-sm-2 col-form-label">Sisa</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" name="remainder" id="remainder" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                    <div class="card-footer">
+                        <button type="submit" id="savePurchase" class="btn btn-info">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- /.modal -->
+
 @endsection
 
 @push('page-scripts')
@@ -461,7 +500,7 @@
 
         // function pageRedirect
         function pageRedirect() {
-            window.location = "{{ route('purchaseorderlist.index') }}";
+            window.location = "{{ route('purchaselist.index') }}";
         }
 
         // format date
@@ -486,20 +525,8 @@
         // temporary array
         var purchase_price = [];
         var item_code = [];
-        var item_discount = [];
         var rowindex;
         let number = 1
-
-        var rownumber = $('table.order-list tbody tr:last').index();
-
-        for (rowindex = 0; rowindex <= rownumber; rowindex++) {
-            purchase_price.push(parseFloat($('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ')').find(
-                '.purchasePrice').val()));
-            var total_discount = parseFloat($('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ')').find(
-                '.discount-value').val());
-            var quantity = parseFloat($('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ')').find('.qty').val());
-            item_discount.push((total_discount / quantity).toFixed(2));
-        }
 
         // show search items
         $('#showItem').on('click', function(e) {
@@ -511,7 +538,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('purchaseorderlist.fetchItem') }}",
+                    url: "{{ route('purchaselist.fetchItem') }}",
                     type: "GET",
                 },
                 columns: [{
@@ -569,7 +596,7 @@
         // select items
         $(document).on('click', '#selectItem', function(e) {
             var id = $(this).attr("value");
-            var url = "{{ route('purchaseorderlist.getItem', ':id') }}";
+            var url = "{{ route('purchaselist.getItem', ':id') }}";
             url = url.replace(':id', id);
             $.ajax({
                 url: url,
@@ -586,17 +613,11 @@
                             rowindex = i;
                             var qty = parseFloat($('table.order-list tbody tr:nth-child(' + (
                                 rowindex + 1) + ') .qty').val()) + 1;
-                            var price = parseFloat($('table.order-list tbody tr:nth-child(' + (
-                                rowindex + 1) + ') .purchasePrice').val());
-                            var discount = parseFloat($('table.order-list tbody tr:nth-child(' +
-                                (rowindex + 1) + ') .discount-value').val());
                             $('table.order-list tbody tr:nth-child(' + (rowindex + 1) +
                                 ') .qty').val(qty);
                             $('table.order-list tbody tr:nth-child(' + (rowindex + 1) +
-                                ') .discount-value').val(discount);
-                            $('table.order-list tbody tr:nth-child(' + (rowindex + 1) +
-                                ') .purchasePrice').val(price);
-                            calculateRowitemData(qty, discount, price);
+                                ') .recieved').val(qty);
+                            calculateRowitemData(qty, 0, responce.data.purchase_price);
                             flag = 0;
                         }
                     });
@@ -607,16 +628,17 @@
                         cols += `<td>` +
                             `<input class="checkmark select-form" type="checkbox" value="${id}">` +
                             `</td>`;
+                        cols += `<td>` + number + `</td>`;
                         cols += `<td>` + responce.data.item_code + `</td>`;
                         cols += `<td>` + responce.data.item_name + `</td>`;
                         cols += `<td>` +
-                            `<input type="number" class="form-control form-control-sm qty" value="1" name="qty[]">` +
+                            `<input type="number" class="form-control form-control-sm qty" value="0" name="qty[]" readonly>` +
                             `</td>`;
                         cols += `<td>` +
-                            `<input type="number" class="form-control form-control-sm recieved" value="0" name="recieved[]" readonly>` +
+                            `<input type="number" class="form-control form-control-sm recieved" value="1" name="recieved[]">` +
                             `</td>`;
                         cols += `<td>` +
-                            `<input type="text" class="form-control form-control-sm" value="${responce.data.unit.unit}">` +
+                            `<input type="text" class="form-control form-control-sm" value="${responce.data.unit.unit}"readonly>` +
                             `</td>`;
                         cols += `<td>` +
                             `<input type="number" class="form-control form-control-sm discount" value="0" name="discount[]">` +
@@ -646,14 +668,14 @@
             })
         })
 
-        //Change quantity
-        $("#myTable").on('input', '.qty', function() {
+        //Change recieved
+        $("#myTable").on('input', '.recieved', function() {
             rowindex = $(this).closest('tr').index();
             var purchasePrice = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice')
                 .val();
             var discount = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val();
             if ($(this).val() < 1 && $(this).val() != '') {
-                $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val(1);
+                $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .recieved').val(1);
                 alert("Quantity can't be less than 1");
             }
             calculateRowitemData($(this).val(), discount, purchasePrice)
@@ -664,10 +686,7 @@
             rowindex = $(this).closest('tr').index();
             var purchasePrice = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice')
                 .val();
-            var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val();
-            if ($(this).val() < 0 && $(this).val() != '') {
-                $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val(0);
-            }
+            var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .recieved').val();
             if (parseFloat($(this).val()) > parseFloat(purchasePrice)) {
                 Toast.fire({
                     icon: 'error',
@@ -680,10 +699,53 @@
         });
 
         // Change price
-        $("#myTable").on('input', '.purchasePrice', function() {
+        $("#myTable").on('change', '.purchasePrice', function() {
             rowindex = $(this).closest('tr').index();
-            var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val();
+            var id = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .select-form').val()
+            var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .recieved').val();
             var discount = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val()
+            var url = "{{ route('purchaseorderlist.changePurchasePrice', ':id') }}";
+            url = url.replace(':id', id);
+            var fd = new FormData();
+            fd.append("purchase_price", $(this).val())
+            if ($(this).val() == $(this).val()) {
+                $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice').val();
+                Swal.fire({
+                    title: 'Apakah kamu yakin?',
+                    text: "Harga Pokok akan di ubah pada master data ? Harga Pokok akan disimpan setelah klik tombol Simpan",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajaxSetup({
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            }
+                        });
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            dataType: "JSON",
+                            processData: false,
+                            contentType: false,
+                            data: fd,
+                            success: function(responce) {
+                                if (responce.success == 200) {
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Yeay..!',
+                                        text: responce.message
+                                    });
+                                }
+                            }
+                        })
+                    }
+                })
+            }
             calculateRowitemData(quantity, discount, $(this).val())
         });
 
@@ -693,26 +755,25 @@
         });
 
         // store purchase order
-        $(document).on('click', '#updatePurchaseOrder', function(e) {
+        $(document).on('click', '#savePurchase', function(e) {
             e.preventDefault();
 
             var items = [];
-            var method = $("input[name='_method']").attr('value');
-            var id = $('#order_purchase_id').val();
             var referenceNo = $('#ReferenceNo').val();
             var grandTotal = $('input[name="grand_total"]').val();
             var totalDiscount = $('input[name="total_discount"]').val();
-            var orderDiscount = $('#orderDiscount').val();
             var totalQty = $('input[name="total_qty"]').val();
-            var totalPrice = $('input[name="total_price"]').val();
             var totalRecieved = $('input[name="total_recieved"]').val();
             var totalItem = $('input[name="total_item"]').val();
+            var orderDiscount = $('#orderDiscount').val();
+            var orderPurchase = $('#orderPurchaseId').val();
             var supplier = $('#supplierId').val();
             var sendDate = $('#sendDate').val();
-            var desc = $('#desc').val();
+            var totalPrice = $('#subTotal').val();
             var warehouse = $('#warehouseId').val();
-            var purchaseStatus = $('#purchaseStatus').val();
+            var purchaseStatus = $('input[name="purchase_status"]').val();
             var paymentStatus = $('input[name="payment_status"]').val();
+            var desc = $('#desc').val();
             var rownumber = $('table.order-list tbody tr:last').index();
             var fd = new FormData();
             // looping row selected
@@ -740,23 +801,21 @@
             $('input[name="subtotal[]"]').each(function() {
                 items.push(fd.append("subtotal[]", $(this).val()));
             })
-            fd.append("_method", method)
-            fd.append("id", id);
             fd.append("reference_no", referenceNo);
             fd.append("supplier_id", supplier);
             fd.append("send_date", sendDate);
             fd.append("warehouse_id", warehouse);
-            fd.append("send_date", sendDate);
-            fd.append("grand_total", grandTotal);
-            fd.append("total_price", totalPrice);
-            fd.append("total_discount", totalDiscount);
             fd.append("order_discount", orderDiscount);
+            fd.append("grand_total", grandTotal);
+            fd.append("total_discount", totalDiscount);
             fd.append("total_qty", totalQty);
+            fd.append("total_price", parseFloat(totalPrice.replaceAll('.', '')));
             fd.append("total_recieved", totalRecieved);
             fd.append("total_item", totalItem);
-            fd.append("desc", desc);
+            fd.append("order_purchase_id", orderPurchase);
             fd.append("purchase_status", purchaseStatus);
             fd.append("payment_status", paymentStatus);
+            fd.append("desc", desc);
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -778,7 +837,6 @@
                     contentType: false,
                     data: fd,
                     success: function(responce) {
-                        console.log(responce)
                         if (responce.success == 200) {
                             Toast.fire({
                                 icon: 'success',
@@ -803,17 +861,25 @@
                                 $('#warehouseId').addClass('');
                                 $('#errorWarehouseId').html('');
                             }
-                            if (responce.message.purchase_status) {
-                                $('#purchaseStatus').addClass('is-invalid');
-                                $('#errorPurchaseStatus').html(responce.message.purchase_status);
-                            } else {
-                                $('#purchaseStatus').removeClass('is-invalid');
-                                $('#purchaseStatus').addClass('');
-                                $('#errorPurchaseStatus').html('');
-                            }
                         }
                     }
                 })
+            }
+        })
+
+        // store purchase order
+        $(document).on('click', '#payment', function(e) {
+            e.preventDefault();
+            var rownumber = $('table.order-list tbody tr:last').index();
+            if (rownumber < 0) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Opps..!',
+                    text: 'Maaf Item belum diinput!'
+                });
+                e.preventDefault();
+            } else {
+                $('#modal-show-payment').modal('show')
             }
         })
 
@@ -832,13 +898,12 @@
                     }
                 });
                 $.ajax({
-                    url: "{{ route('purchaseorderlist.showSelected') }}",
+                    url: "{{ route('purchaselist.showSelected') }}",
                     type: 'POST',
                     data: {
                         id: id
                     },
                     success: function(responce) {
-                        console.log(responce)
                         $('#modal-show-update-price').modal('show')
                         $("#id").val(responce.data.id);
                         $('#itemCode').val(responce.data.item_code)
@@ -849,14 +914,14 @@
             } else if ($('.select-form:checked').length > 1) {
                 Toast.fire({
                     icon: 'error',
-                    title: 'Oppss..!',
-                    text: 'Lebih dari 1!'
+                    title: 'Opps..!',
+                    text: 'Maaf Item lebih dari 1!'
                 });
             } else {
                 Toast.fire({
                     icon: 'error',
-                    title: 'Oppss..!',
-                    text: 'Belum dipilih!'
+                    title: 'Opps..!',
+                    text: 'Maaf Item belum dipilih!'
                 });
             }
         })
@@ -866,7 +931,7 @@
             e.preventDefault();
             var id = $("#id").val();
             var sellingPrice = $("#selling").val();
-            var url = "{{ route('purchaseorderlist.updatePrice', ':id') }}";
+            var url = "{{ route('purchaselist.updatePrice', ':id') }}";
             url = url.replace(':id', id);
             var fd = new FormData();
             fd.append("id", id);
@@ -884,7 +949,6 @@
                 contentType: false,
                 data: fd,
                 success: function(responce) {
-                    console.log(responce)
                     if (responce.success == 200) {
                         alert(responce.message)
                         $('#modal-show-update-price').modal('hide');
@@ -910,9 +974,6 @@
             $.each(selected, function(index, responce) {
                 id.push(responce.value)
                 if ($('.select-form:checked').length > 0) {
-                    rowindex = $(this).closest('tr').index();
-                    purchase_price.splice(rowindex, 1);
-                    item_discount.splice(rowindex, 1);
                     $(this).closest('tr').remove();
                     calculateTotal();
                 } else {
@@ -931,7 +992,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('purchaseorderlist.fetchSupplier') }}",
+                    url: "{{ route('purchaselist.fetchSupplier') }}",
                     type: "GET",
                 },
                 columns: [{
@@ -959,11 +1020,69 @@
             });
         })
 
+        // show search order purchase
+        $('.showOrder').on('click', function(e) {
+            e.preventDefault();
+            var id = $("#supplierId").val();
+            var url = "{{ route('purchaselist.orderPurchase', ':id') }}";
+            url = url.replace(':id', id);
+            if (id != '') {
+                $('#modal-show-order').modal('show')
+                $("#table-order").DataTable({
+                    destroy: true,
+                    responsive: true,
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: url,
+                        type: "GET",
+                    },
+                    columns: [{
+                            data: 'reference_no'
+                        },
+                        {
+                            data: 'created_at'
+                        },
+                        {
+                            data: 'send_date'
+                        },
+                        {
+                            data: 'warehouse'
+                        },
+                        {
+                            data: 'supplier'
+                        },
+                        {
+                            data: 'total_qty'
+                        },
+                        {
+                            data: 'total_recieved'
+                        },
+                        {
+                            data: 'grand_total'
+                        },
+                        {
+                            data: 'action',
+                            searchable: false,
+                            sortable: false
+                        },
+                    ],
+                    select: {
+                        style: 'multi',
+                        selector: 'td:first-child'
+                    },
+                });
+            } else {
+                alert('Pilih supplier terlebih dahulu!')
+            }
+
+        })
+
         // select supplier
         $(document).on('click', '#selectSupplier', function(e) {
             e.preventDefault();
             var id = $(this).attr("value");
-            var url = "{{ route('purchaseorderlist.getSupplier', ':id') }}";
+            var url = "{{ route('purchaselist.getSupplier', ':id') }}";
             url = url.replace(':id', id);
             $.ajax({
                 url: url,
@@ -973,13 +1092,113 @@
                     id: id
                 },
                 success: function(responce) {
-                    console.log(responce);
                     $('#supplierId').val(responce.data.id);
                     $('#supplierName').val(responce.data.supplier_name);
                     $('#modal-show-supplier').modal('hide')
                 }
             })
         })
+
+        // select order purchase
+        $(document).on('click', '#selectOrder', function(e) {
+            e.preventDefault();
+            var id = $(this).attr("value");
+            var url = "{{ route('purchaselist.getOrderPurchase', ':id') }}";
+            url = url.replace(':id', id);
+            $.ajax({
+                url: url,
+                type: "GET",
+                dataType: "JSON",
+                data: {
+                    id: id
+                },
+                success: function(responce) {
+                    $('#orderPurchaseId').val(responce.data.id);
+                    $("#referenceNoOrder").prop('readonly');
+                    $("#referenceNoOrder").prop('disabled', true);
+                    $("#supplierName").prop('readonly');
+                    $("#supplierName").prop('disabled', true);
+                    $('#referenceNoOrder').val(responce.data.reference_no);
+                    $('#sendDate').val(moment(new Date(responce.data.send_date)).format("MM/DD/YYYY"));
+                    $('#totalQty').val(parseFloat(responce.data.total_item).toFixed(2))
+                    $('#subTotal').val(format_uang(responce.data.total_price))
+                    $('input[name="total_qty"]').val(responce.data.total_qty);
+                    $('input[name="total_recieved"]').val(responce.data.total_recieved);
+                    $('input[name="total_discount"]').val(responce.data.total_discount);
+                    $('input[name="total_price"]').val(responce.data.total_price);
+                    $('input[name="total_item"]').val(responce.data.total_item);
+                    $('input[name="grand_total"]').val(responce.data.grand_total);
+                    $('input[name="purchase_status"]').val(responce.data.purchase_status);
+                    $('input[name="paid_amount"]').val(responce.data.paid_amount);
+                    $('#warehouseId').val(responce.data.warehouse_id)
+                    $('#warehouseId').trigger('change');
+                    $('#totalRecieved').val(parseFloat(responce.data.total_recieved).toFixed(2))
+                    if ($('#orderDiscount').val() != '') {
+                        $('#orderDiscount').val(format_uang(responce.data.order_discount))
+                    } else {
+                        $('#orderDiscount').val(responce.data.order_discount)
+                    }
+                    $('#grandTotal').val(format_uang(responce.data.grand_total))
+                    $('#desc').val(responce.data.desc)
+                    $('#modal-show-order').modal('hide')
+                    listOrder(id)
+                }
+            })
+        })
+
+        function listOrder(id) {
+            $.ajax({
+                url: 'listOrderPurchase/' + id,
+                type: "GET",
+                dataType: "JSON",
+                cache: true,
+                success: function(responce) {
+                    var cols = '';
+                    newRow = $('<tr>');
+                    for (var i = 0; i < responce['data'].length; i++) {
+                        cols += `<tr><td>` +
+                            `<input class="checkmark select-form" type="checkbox" value="${responce['data'][i]['item']['id']}">` +
+                            `</td>`;
+                        cols += `<td>` + responce['data'][i]['id'] + `</td>`;
+                        cols += `<td>` + responce['data'][i]['item']['item_code'] + `</td>`;
+                        cols += `<td>` + responce['data'][i]['item']['item_name'] + `</td>`;
+                        cols += `<td>` +
+                            `<input type="number" class="form-control form-control-sm qty" value="${responce['data'][i]['qty']}" name="qty[]" readonly>` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="number" class="form-control form-control-sm recieved" value="${responce['data'][i]['qty']}" name="recieved[]">` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="text" class="form-control form-control-sm" value="${responce['data'][i]['item']['unit']['unit']}"readonly>` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="number" class="form-control form-control-sm discount" value="${responce['data'][i]['discount']}" name="discount[]">` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="number" class="form-control form-control-sm purchasePrice" value="${responce['data'][i]['price']}" name="purchase_price[]">` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="number" class="form-control form-control-sm sub-total" value="${responce['data'][i]['total']}" name="subtotal[]" readonly>` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="text" class="form-control form-control-sm batch-no" name="batch_no[]">` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="text" class="form-control form-control-sm datetimes" name="expired_date[]" value="{{ date('d/m/Y') }}"/>` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="hidden" class="item-code" name="item_code[]" value="${responce['data'][i]['item']['item_code']}"/>` +
+                            `</td>`;
+                        cols += `<td>` +
+                            `<input type="hidden" class="item-id" name="item_id[]" value="${responce['data'][i]['item']['id']}"/>` +
+                            `</td>`;
+                    }
+                    $("table.order-list tbody").append(cols)
+                    rowindex = newRow.index();
+                    calculateRowitemData(1, 0, responce.data.price);
+                }
+            })
+        }
 
         // calculation row item
         function calculateRowitemData(quantity, discount, price) {
@@ -1036,7 +1255,7 @@
         // calculate grand total
         function calculateGrandTotal() {
             var item = $('table.order-list tbody tr:last').index();
-            var total_qty = parseFloat($('#totalQty').val());
+            var total_qty = parseFloat($('#totalRecieved').val());
             var subtotal = parseFloat($('input[name="total_price"]').val());
             var order_discount = parseFloat($('input[name="order_discount"]').val());
             if (!order_discount)
@@ -1048,7 +1267,6 @@
             $('#subTotal').val(format_uang(subtotal));
             $('#order_discount').val(order_discount);
             $('#grandTotal').val(format_uang(grand_total));
-            console.log(grand_total)
             $('input[name="grand_total"]').val(grand_total);
         }
     </script>

@@ -155,7 +155,8 @@
                                             <option selected disabled>Pilih...</option>
                                             @foreach ($type as $item)
                                                 @if (old('type_id') == $item->id)
-                                                    <option value="{{ $item->id }}">{{ $item->type }}</option>
+                                                    <option value="{{ $item->id }}">{{ $item->type }}
+                                                    </option>
                                                 @else
                                                     <option value="{{ $item->id }}">{{ $item->type }}</option>
                                                 @endif

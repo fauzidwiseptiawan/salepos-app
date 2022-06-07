@@ -252,10 +252,6 @@
                                     <button type="submit" class="btn btn-info float-left btn-block"
                                         id="savePurchaseOrder">Simpan</button>
                                 </div>
-                                <div class="btn-group">
-                                    <button type="submit" class="btn btn-warning float-left btn-block"
-                                        id="addBrand">Cetak</button>
-                                </div>
                             </div>
                         </div>
                     </form>
@@ -608,10 +604,53 @@
         });
 
         // Change price
-        $("#myTable").on('input', '.purchasePrice', function() {
+        $("#myTable").on('change', '.purchasePrice', function() {
             rowindex = $(this).closest('tr').index();
+            var id = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .select-form').val()
             var quantity = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .qty').val();
             var discount = $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .discount').val()
+            var url = "{{ route('purchaseorderlist.changePurchasePrice', ':id') }}";
+            url = url.replace(':id', id);
+            var fd = new FormData();
+            fd.append("purchase_price", $(this).val())
+            if ($(this).val() == $(this).val()) {
+                $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ') .purchasePrice').val();
+                Swal.fire({
+                    title: 'Apakah kamu yakin?',
+                    text: "Harga Pokok akan di ubah pada master data ? Harga Pokok akan disimpan setelah klik tombol Simpan",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajaxSetup({
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            }
+                        });
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            dataType: "JSON",
+                            processData: false,
+                            contentType: false,
+                            data: fd,
+                            success: function(responce) {
+                                if (responce.success == 200) {
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Yeay..!',
+                                        text: responce.message
+                                    });
+                                }
+                            }
+                        })
+                    }
+                })
+            }
             calculateRowitemData(quantity, discount, $(this).val())
         });
 
@@ -746,7 +785,6 @@
             // looping row selected
             $.each(selected, function(index, responce) {
                 id.push(responce.value)
-                // console.log(id)
             })
             if ($('.select-form:checked').length == 1) {
                 $.ajaxSetup({
@@ -761,7 +799,6 @@
                         id: id
                     },
                     success: function(responce) {
-                        console.log(responce)
                         $('#modal-show-update-price').modal('show')
                         $("#id").val(responce.data.id);
                         $('#itemCode').val(responce.data.item_code)
@@ -770,9 +807,17 @@
                     }
                 })
             } else if ($('.select-form:checked').length > 1) {
-                alert('lebih dari 1')
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Opps..!',
+                    text: 'Maaf Item lebih dari 1!'
+                });
             } else {
-                alert('belum dipilih')
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Opps..!',
+                    text: 'Maaf Item belum dipilih!'
+                });
             }
         })
 
@@ -781,7 +826,6 @@
             e.preventDefault();
             var id = $("#id").val();
             var sellingPrice = $("#selling").val();
-            console.log(sellingPrice);
             var url = "{{ route('purchaseorderlist.updatePrice', ':id') }}";
             url = url.replace(':id', id);
             var fd = new FormData();
@@ -800,7 +844,6 @@
                 contentType: false,
                 data: fd,
                 success: function(responce) {
-                    console.log(responce)
                     if (responce.success == 200) {
                         alert(responce.message)
                         $('#modal-show-update-price').modal('hide');
@@ -886,7 +929,6 @@
                     id: id
                 },
                 success: function(responce) {
-                    console.log(responce);
                     $('#supplierId').val(responce.data.id);
                     $('#supplierName').val(responce.data.supplier_name);
                     $('#modal-show-supplier').modal('hide')

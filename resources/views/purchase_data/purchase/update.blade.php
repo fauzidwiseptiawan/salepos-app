@@ -6,7 +6,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">@yield('title') : {{ $order_purchase->reference_no }}</h1>
+                    <h1 class="m-0">@yield('title') : {{ $purchase->reference_no }}</h1>
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -23,10 +23,10 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card card-default">
-                    <form method="POST" action="{{ route('purchaseorderlist.update', $order_purchase->id) }}"
+                    <form method="POST" action="{{ route('purchaseorderlist.update', $purchase->id) }}"
                         class="needs-validation add-purchase-order" enctype="multipart/form-data">
                         <input type="hidden" name="_method" value="PUT">
-                        <input type="hidden" id="order_purchase_id" value="{{ $order_purchase->id }}">
+                        <input type="hidden" id="purchase_id" value="{{ $purchase->id }}">
                         <div class="card-body">
                             {{-- form pertama --}}
                             <div class="col-md-12">
@@ -35,7 +35,7 @@
                                         <div class="form-group">
                                             <label for="reference_no">No Transaksi</label>
                                             <input type="text" class="form-control" id="ReferenceNo" name="reference_no"
-                                                value="{{ $order_purchase->reference_no }}" readonly>
+                                                value="{{ $purchase->reference_no }}" readonly>
                                             <small id="errorRefenceNo" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -43,7 +43,7 @@
                                         <div class="form-group">
                                             <label for="date">Tanggal</label>
                                             <input type="text" class="form-control" id="date" name="date" readonly
-                                                value="{{ date('d/m/Y H:i:s', strtotime($order_purchase->created_at)) }}">
+                                                value="{{ date('d/m/Y H:i:s', strtotime($purchase->created_at)) }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -51,10 +51,9 @@
                                             <label for="supplierId">Supplier</label>
                                             <div class="input-group mb-3">
                                                 <input type="hidden" name="supplier_id" id="supplierId"
-                                                    value="{{ $order_purchase->supplier->id }}">
+                                                    value="{{ $purchase->supplier->id }}">
                                                 <input type="text" class="form-control showSupplier" id="supplierName"
-                                                    name="supplier_name"
-                                                    value="{{ $order_purchase->supplier->supplier_name }}">
+                                                    name="supplier_name" value="{{ $purchase->supplier->supplier_name }}">
                                                 <div class="input-group-append showSupplier">
                                                     <span class="input-group-text"><i class="fas fa-search"></i></span>
                                                 </div>
@@ -72,38 +71,43 @@
                                                 <option></option>
                                                 @foreach ($warehouse as $items)
                                                     <option value="{{ $items->id }}"
-                                                        @if ($items->id == $order_purchase->warehouse_id) selected @endif>
+                                                        @if ($items->id == $purchase->warehouse_id) selected @endif>
                                                         {{ $items->name }}</option>
                                                 @endforeach
                                             </select>
                                             <small id="errorWarehouseId" class="form-text text-muted"></small>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>Status Pembelian</label>
-                                            <select value="" id="purchaseStatus" class="form-control select2bs4"
-                                                name="purchase_status" style="width: 100%;">
-                                                <option></option>
-                                                <option {{ $order_purchase->purchase_status == '1' ? 'selected' : '' }}
-                                                    value="1">
-                                                    Menunggu Pembayaran</option>
-                                                <option {{ $order_purchase->purchase_status == '2' ? 'selected' : '' }}
-                                                    value="2">
-                                                    Menunggu Persetujuan</option>
-                                                <option {{ $order_purchase->purchase_status == '3' ? 'selected' : '' }}
-                                                    value="3">
-                                                    Disetuji</option>
-                                                <option {{ $order_purchase->purchase_status == '4' ? 'selected' : '' }}
-                                                    value="4">
-                                                    Selesai</option>
-                                                <option {{ $order_purchase->purchase_status == '5' ? 'selected' : '' }}
-                                                    value="5">
-                                                    Dibatal kan</option>
-                                            </select>
-                                            <small id="errorPurchaseStatus" class="form-text text-muted"></small>
+                                    @if ($purchase->order_purchase != '')
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="order">Pesanan</label>
+                                                <div class="input-group mb-3">
+                                                    <input type="hidden" name="order_purchase_id" id="orderPurchaseId"
+                                                        value="{{ $purchase->order_purchase_id }}">
+                                                    <input type="text" class="form-control showOrder" id="referenceNoOrder"
+                                                        name="reference_no" placeholder="Select..." readonly
+                                                        value="{{ $purchase->order_purchase->reference_no }}">
+                                                    <div class="input-group-append showOrder">
+                                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @else
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="order">Pesanan</label>
+                                                <div class="input-group mb-3">
+                                                    <input type="text" class="form-control showOrder" id="referenceNoOrder"
+                                                        name="reference_no" placeholder="Select..." readonly>
+                                                    <div class="input-group-append showOrder">
+                                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                             {{-- table item --}}
@@ -129,8 +133,7 @@
                                         <tbody>
                                             @foreach ($item_purchases as $ip)
                                                 <tr>
-                                                    <td><input class="checkmark select-form" type="checkbox"
-                                                            value="{{ $ip->item->id }}"></td>
+                                                    <td><input class="checkmark select-form" type="checkbox"></td>
                                                     <td>{{ $ip->item->item_code }}</td>
                                                     <td>{{ $ip->item->item_name }}</td>
                                                     <td><input type="number" class="form-control form-control-sm qty"
@@ -172,37 +175,34 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <input type="hidden" name="total_qty" value="{{ $order_purchase->total_qty }}" />
+                                        <input type="hidden" name="total_qty" value="{{ $purchase->total_qty }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <input type="hidden" name="total_recieved"
-                                            value="{{ $order_purchase->total_recieved }}" />
+                                            value="{{ $purchase->total_recieved }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <input type="hidden" name="total_discount"
-                                            value="{{ $order_purchase->total_discount }}" />
+                                            value="{{ $purchase->total_discount }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <input type="hidden" name="total_price"
-                                            value="{{ $order_purchase->total_price }}" />
+                                        <input type="hidden" name="total_price" value="{{ $purchase->total_price }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <input type="hidden" name="total_item"
-                                            value="{{ $order_purchase->total_item }}" />
+                                        <input type="hidden" name="total_item" value="{{ $purchase->total_item }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <input type="hidden" name="grand_total"
-                                            value="{{ $order_purchase->grand_total }}" />
+                                        <input type="hidden" name="grand_total" value="{{ $purchase->grand_total }}" />
                                         <input type="hidden" name="paid_amount" value="0.00" />
                                         <input type="hidden" name="payment_status" value="1" />
                                     </div>
@@ -239,9 +239,10 @@
                                             <label for="date">Tanggal Kirim</label>
                                             {{-- <input type="date" name="send_date" id="sendDate"> --}}
                                             <div class="input-group date" id="senddate" data-target-input="nearest">
-                                                <input type="text" class="form-control form-control-sm datetimepicker-input"
+                                                <input type="text"
+                                                    class="form-control form-control-sm datetimepicker-input"
                                                     data-target="#senddate" id="sendDate" name="send_date"
-                                                    value="{{ date('d/m/Y', strtotime($order_purchase->send_date)) }}" />
+                                                    value="{{ date('d/m/Y', strtotime($purchase->send_date)) }}" />
                                                 <div class="input-group-append" data-target="#senddate"
                                                     data-toggle="datetimepicker">
                                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -253,7 +254,7 @@
                                         <div class="form-group">
                                             <label for="totaQty">Item</label>
                                             <input type="text" class="form-control text-right" id="totalQty"
-                                                value="{{ format_uang($order_purchase->total_qty) }}" readonly>
+                                                value="{{ format_uang($purchase->total_qty) }}" readonly>
                                             <small id="errorTotaQty" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -261,14 +262,14 @@
                                         <div class="form-group">
                                             <label for="recived">Terima</label>
                                             <input type="text" class="form-control text-right" id="totalRecieved"
-                                                value="{{ format_uang($order_purchase->total_recieved) }}" readonly>
+                                                value="{{ format_uang($purchase->total_recieved) }}" readonly>
                                         </div>
                                     </div>
                                     <div class="col-md-2">
                                         <div class="form-group">
                                             <label for="subTotal">Sub Total</label>
                                             <input type="text" class="form-control text-right" id="subTotal"
-                                                value="{{ format_uang($order_purchase->total_price) }}" readonly>
+                                                value="{{ format_uang($purchase->total_price) }}" readonly>
                                             <small id="errorsubTotal" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -276,7 +277,7 @@
                                         <div class="form-group">
                                             <label for="orderDiscount">Pot Rp</label>
                                             <input type="text" class="form-control  text-right" id="orderDiscount"
-                                                name="order_discount" value="{{ $order_purchase->order_discount }}">
+                                                name="order_discount" value="{{ $purchase->order_discount }}">
                                             <small id="errorOrderDiscount" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -286,7 +287,7 @@
                                         <div class="form-group">
                                             <label for="desc">Keterangan</label>
                                             <input type="text" class="form-control" id="desc" name="desc"
-                                                value="{{ $order_purchase->desc }}">
+                                                value="{{ $purchase->desc }}">
                                             <small id="errorDesc" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -296,7 +297,7 @@
                                             <input type="text"
                                                 class="form-control bg-primary disabled color-palette text-right font-weight-bold"
                                                 style="font-size: 25px" id="grandTotal"
-                                                value="{{ format_uang($order_purchase->grand_total) }}" readonly>
+                                                value="{{ format_uang($purchase->grand_total) }}" readonly>
                                             <small id="errorGrandTotal" class="form-text text-muted"></small>
                                         </div>
                                     </div>
@@ -698,7 +699,7 @@
 
             var items = [];
             var method = $("input[name='_method']").attr('value');
-            var id = $('#order_purchase_id').val();
+            var id = $('#purchase_id').val();
             var referenceNo = $('#ReferenceNo').val();
             var grandTotal = $('input[name="grand_total"]').val();
             var totalDiscount = $('input[name="total_discount"]').val();
@@ -824,6 +825,7 @@
             // looping row selected
             $.each(selected, function(index, responce) {
                 id.push(responce.value)
+                // console.log(id)
             })
             if ($('.select-form:checked').length == 1) {
                 $.ajaxSetup({
@@ -847,17 +849,9 @@
                     }
                 })
             } else if ($('.select-form:checked').length > 1) {
-                Toast.fire({
-                    icon: 'error',
-                    title: 'Oppss..!',
-                    text: 'Lebih dari 1!'
-                });
+                alert('lebih dari 1')
             } else {
-                Toast.fire({
-                    icon: 'error',
-                    title: 'Oppss..!',
-                    text: 'Belum dipilih!'
-                });
+                alert('belum dipilih')
             }
         })
 
@@ -866,6 +860,7 @@
             e.preventDefault();
             var id = $("#id").val();
             var sellingPrice = $("#selling").val();
+            console.log(sellingPrice);
             var url = "{{ route('purchaseorderlist.updatePrice', ':id') }}";
             url = url.replace(':id', id);
             var fd = new FormData();

@@ -296,6 +296,18 @@ class PurchaseOrderController extends Controller
         }
     }
 
+    public function changePurchasePrice(Request $request, $id)
+    {
+        $item = Item::where('id', $id)->first();
+        $item->update([
+            'purchase_price' => $request->purchase_price
+        ]);
+        return response()->json([
+            'success' => 200,
+            'message' => 'Harga pokok  berhasil di ubah',
+        ]);
+    }
+
     public function destroy($id)
     {
         $purchase_data = OrderPurchase::find($id);

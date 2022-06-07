@@ -170,8 +170,4 @@
 @endpush
 
 @push('after-scripts')
-    <script>
-        // function
-        $('.sidebar-mini').addClass('sidebar-collapse');
-    </script>
 @endpush
